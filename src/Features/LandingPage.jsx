@@ -1,6 +1,9 @@
-import './LandingPageCss.css'; // if the component is in the same folder
+import './LandingPageCss.css';
+import { Link } from 'react-router-dom';
+
 
 function LandingPage(){
+    
 
 
     return(
@@ -9,9 +12,17 @@ function LandingPage(){
             <p className="home-subtitle">Sharpen your typing skills with fun and effective modes!</p>
           
            <div className="menu-buttons">
-            <button className="btn">Practice</button>
-            <button className="btn">Test</button>
-            <button className="btn">Game</button>
+            <Link to="/practice" >
+            <button  >Practice</button>
+            </Link>
+            
+            <Link to="/test" >
+            <button >Test</button>
+            </Link>
+            
+            <Link to="/game" >
+            <button >Game</button>
+            </Link>
            </div>
 
         </div>
