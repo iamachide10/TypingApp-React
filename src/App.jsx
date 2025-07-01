@@ -1,8 +1,14 @@
+import LandingPage from "./Features/LandingPage";
+
+
+
 function App() {
   return (
-    <div className="App">
-      <h1>My calculator Update</h1>
-    </div>
+    
+      <>
+     <LandingPage/>
+      </>
+    
   );
 }
 
