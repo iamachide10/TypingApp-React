@@ -1,0 +1,21 @@
+.practice-play-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 80px;
+  font-family: sans-serif;
+}
+
+.letter-box {
+  font-size: 100px;
+  border: 4px solid #28a745;
+  padding: 30px 50px;
+  margin: 30px 0;
+  border-radius: 10px;
+  background-color: #e6fff3;
+}
+
+.feedback {
+  font-size: 24px;
+  color: #333;
+}
