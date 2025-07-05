@@ -77,15 +77,14 @@ function PracticeLevelPage(){
 
 
 
-return(
-    <div>
-        <h1>{currentLetter}</h1>
-        <h2>{feedBack}</h2>
-        <h2>Incorrects: {incorrectCount}</h2>
-        <h2>Corrects: {correctCount}</h2>
-        <>{startTime}</>
+return (
+    <div className="practice-play-container">
+      <h1>{level.name} Practice</h1>
+      <div className="letter-box">{currentLetter}</div>
+      <p className="feedback">{feedback}</p>
     </div>
-)
+  );
+}
 
 }
 
