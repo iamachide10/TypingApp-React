@@ -1,5 +1,5 @@
 import { useState ,useEffect} from "react";
-
+import './PracticeLevelPageCss.css';
 import { useParams } from "react-router-dom"
 const levels = {
   level1: { name: "ASDF", keys: ["a", "s", "d", "f"] },
