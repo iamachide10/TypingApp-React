@@ -83,19 +83,61 @@ function PracticeLevelPage(){
     return () => window.removeEventListener("keydown", handleKeyPress);
   });
 
+  const getAccuracy = () =>{
+    const total = correctCount + incorrectCount;
+    return total ===0? 0:Math.round((correctCount/total)*100)
 
+  }
+
+  const getWPM = ()=>{
+    const timeElapsed =(Date.now() - startTime)/1000/60;
+
+    return timeElapsed ===0 ? 0 : Math.round((correctCount/5)/timeElapsed)
+
+  }
+
+  const restart=()=>{
+    setCorrectCount(0)
+    setIncorrectCount(0)
+    setStartTime(Date.now())
+    setIsFinished(false)
+    setFeedBack("")
+    setCurrentLetter(getCurrentLetter())
+  }
+
+  if(!level) return <p>Level not found!!</p>
 
 
 
 return (
     <div className="practice-play-container">
       <h1>{level.name} Practice</h1>
-      <div className="letter-box" style={{borderColor: feedBack==='Incorrect!!' ? 'red':'green'}} >{currentLetter}</div>
-      <p className={className}>{feedBack}</p>
-    </div>
+      {!isFinished ? (
+        <>
+    
+        <div className="letter-box" style={{borderColor: feedBack==='Incorrect!!' ? 'red':'green'}} >{currentLetter}</div>
+        <p className={className}>{feedBack}</p>
+        <p>Typed: {correctCount + incorrectCount}</p>
+        <p>Correct: {correctCount}</p>
+        <p>Incorrect: {incorrectCount}</p>
+        <p>Accuracy: {getAccuracy()}%</p>
+        <p>WPM: {getWPM()}</p>        
+        </>
+      ):(
+      <>
+      <h2>Level Completed !</h2>
+      <p>Final Accuracy: {getAccuracy()}</p>
+      <p>WPM: {getWPM()}</p>
+      <button onClick={restart}>Restart Level</button>
+      </>)}
+
+     </div>
   );
 }
 
+{/* 
+
+*/}
 
 
 export default PracticeLevelPage 
