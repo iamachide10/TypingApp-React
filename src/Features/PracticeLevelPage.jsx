@@ -14,11 +14,14 @@ const levels = {
 
 
 function PracticeLevelPage(){
+    
     const [startTime,setStartTime]=useState(null)
     const [currentLetter,setCurrentLetter]=useState('')
     const [isFinished,setIsFinished] = useState(false)
+    const [isPaused,setIsPaused] = useState(false)
     const [feedBack,setFeedBack]=useState('')
     const [correctCount,setCorrectCount]=useState(0)
+    const [className,setClassName]=useState('')
     const [incorrectCount,setIncorrectCount]=useState(0)
     const {levelId}=useParams()
     const level=levels[levelId]
@@ -41,8 +44,13 @@ function PracticeLevelPage(){
         return newLetter
     }
 
+
+    const handlePause=()=>{
+      setIsPaused(prev=>!prev)
+    }
    
   const handleKeyPress=(e)=>{
+                 
     if(isFinished) return ;
 
     if(!startTime){
@@ -53,8 +61,10 @@ function PracticeLevelPage(){
     if(currentLetter.toLowerCase() === keyPressed){
         setFeedBack('Correct!!')
         setCorrectCount(prev=>prev +1)
+        setClassName('correct')
     }else{
         setFeedBack('Incorrect!!')
+        setClassName('incorrect')
         setIncorrectCount(prev=>prev +1)
     }
 
@@ -80,12 +90,12 @@ function PracticeLevelPage(){
 return (
     <div className="practice-play-container">
       <h1>{level.name} Practice</h1>
-      <div className="letter-box">{currentLetter}</div>
-      <p className="feedback">{feedback}</p>
+      <div className="letter-box" style={{borderColor: feedBack==='Incorrect!!' ? 'red':'green'}} >{currentLetter}</div>
+      <p className={className}>{feedBack}</p>
     </div>
   );
 }
 
-}
+
 
 export default PracticeLevelPage 
