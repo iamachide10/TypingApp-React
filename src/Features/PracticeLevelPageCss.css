@@ -15,7 +15,15 @@
   background-color: #e6fff3;
 }
 
-.feedback {
+.correct {
   font-size: 24px;
-  color: #333;
+  color: green;
+
 }
+.incorrect {
+  font-size: 24px;
+  color: red;
+
+}
+
+
