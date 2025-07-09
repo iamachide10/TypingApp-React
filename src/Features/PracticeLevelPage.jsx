@@ -46,7 +46,7 @@ function PracticeLevelPage(){
 
 
     const handlePause=()=>{
-      setIsPaused(prev=>!prev)
+      setIsPaused(true)
     }
    
   const handleKeyPress=(e)=>{
@@ -103,6 +103,7 @@ function PracticeLevelPage(){
     setIsFinished(false)
     setFeedBack("")
     setCurrentLetter(getCurrentLetter())
+    setIsPaused(false)
   }
 
   if(!level) return <p>Level not found!!</p>
@@ -110,14 +111,20 @@ function PracticeLevelPage(){
 
 
 return (
-    <div className="practice-play-container">
+  <div className="practice-play-container">
+      <button onClick={handlePause}>Pause</button>
       <h1>{level.name} Practice</h1>
       {!isFinished ? (
         <>
-    
+        
         <div className="letter-box" style={{borderColor: feedBack==='Incorrect!!' ? 'red':'green'}} >{currentLetter}</div>
         <p className={className}>{feedBack}</p>
         <p>Typed: {correctCount + incorrectCount}</p>
+        <div className="pause_pop" style={{display: isPaused ? 'flex' :'none' }}>
+          <button onClick={()=>setIsPaused(false)}>Continue</button>
+          <button onClick={restart}>Restart</button>
+        </div>
+
         <p>Correct: {correctCount}</p>
         <p>Incorrect: {incorrectCount}</p>
         <p>Accuracy: {getAccuracy()}%</p>
@@ -135,9 +142,7 @@ return (
   );
 }
 
-{/* 
 
-*/}
 
 
 export default PracticeLevelPage 
