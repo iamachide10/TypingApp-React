@@ -1,3 +1,8 @@
+*{
+  text-decoration: none;
+}
+
+
 .practice-play-container {
   display: flex;
   flex-direction: column;
@@ -5,6 +10,16 @@
   margin-top: 80px;
   font-family: sans-serif;
 }
+.container_items{
+  display: flex;
+  gap: 20px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  background-color: #e6fff3;
+
+}
+
 
 .letter-box {
   font-size: 100px;
@@ -13,6 +28,8 @@
   margin: 30px 0;
   border-radius: 10px;
   background-color: #e6fff3;
+  min-width: 340px;
+  text-align: center;
 }
 
 .correct {
@@ -38,4 +55,15 @@
     border-radius: 8px;
     box-shadow: 20px 20px 40px 3px black;
     background-color: rgb(54, 54, 54);
+}
+
+
+ button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
