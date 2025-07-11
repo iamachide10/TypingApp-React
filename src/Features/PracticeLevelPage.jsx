@@ -8,7 +8,8 @@ const levels = {
   level3: { name: "ERUI", keys: ["e", "r", "u", "i"] },
   level4: { name: "QWOP", keys: ["q", "w", "o", "p"] },
   level5: { name: "ZXCVBNM", keys: ["z", "x", "c", "v", "b", "n", "m"] },
-  level6: { name: "Full Keyboard", keys: "abcdefghijklmnopqrstuvwxyz".split("") }
+  level6: { name: "Full Keyboard", keys: "abcdefghijklmnopqrstuvwxyz".split("") },
+  level7: { name: "Numbers", keys: "123456".split("") }
 };
 
 
@@ -109,7 +110,7 @@ function PracticeLevelPage(){
 
  
 
-
+ 
   
   const getAccuracy = () =>{
     const total = correctCount + incorrectCount;

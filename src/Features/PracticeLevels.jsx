@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import './PracticeLevelsCss.css';
+import { Link } from "react-router-dom";
 
 function PracticeLevels() {
   const navigate = useNavigate()
@@ -10,12 +11,13 @@ const levels = [
   { id: "level4", title: "Level 4", keys: "Q W O P", description: "Outer keys" },
   { id: "level5", title: "Level 5", keys: "Z X C V B N M", description: "Bottom row" },
   { id: "level6", title: "Level 6", keys: "Full Keyboard", description: "All fingers practice" },
+  { id: "level7", title: "Level 7", keys: "Numbers", description: "Number practice " },
 ];
 
 
   return (
     <div className="levels-container">
-      <h1 className="levels-title">Select a Practice Level</h1>
+      <h1 className="levels-title">   <button style={{marginRight:'10em'}} ><Link to="/" style={{color:'white'}}>Home</Link></button> Select a Practice Level</h1>
       <div className="levels-grid">
         {levels.map((level) => (
           <div key={level.id} className="level-card">
