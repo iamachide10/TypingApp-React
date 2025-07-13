@@ -16,6 +16,7 @@ const levels = {
 
 
 function PracticeLevelPage(){
+    const [pauseDuration,setPauseDuration] = useState(0)
     const [pausedStartime,setPausedStartime]=useState(null)
     const [startTime,setStartTime]=useState(null)
     const [currentLetter,setCurrentLetter]=useState('')
@@ -49,7 +50,15 @@ function PracticeLevelPage(){
 
 
     const handlePause=()=>{
-      setIsPaused(true)
+      if(!isPaused ){
+        setPausedStartime(Date.now()) 
+        
+      }else{
+        const pauseTime = Date.now() - pausedStartime;    
+        setPauseDuration(prev => prev + pauseTime);
+        setPausedStartime(null);        
+      }
+      setIsPaused(prev =>!prev)
     }
    
   const handleKeyPress=(e)=>{
@@ -97,18 +106,11 @@ function PracticeLevelPage(){
     return () => window.removeEventListener("keydown", handleKeyPress);
   });
 
-  const pause =(e)=>{
-    if(e.key==='Escape' || e.keyCode ===27){
-      if(isPaused){
-        setIsPaused(false)
-      }else{
-
-        handlePause()
-      }
+  const pause = (e) => {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      handlePause();
     }
-  }
-
- 
+  };
 
  
   
@@ -119,8 +121,14 @@ function PracticeLevelPage(){
   }
 
   const getWPM = ()=>{
-    const timeElapsed =(Date.now() - startTime)/1000/60;
-    return timeElapsed ===0 ? 0 : Math.round((correctCount/5)/timeElapsed)
+    if(!startTime) return 0;
+    const now= Date.now();
+
+    const totalPaused = isPaused && pausedStartime ? pauseDuration + (now -pausedStartime) : pauseDuration;
+
+    const activeTime = now -startTime-totalPaused;
+    const timeElasped = activeTime/1000/60;
+    return timeElasped ===0 ? 0: Math.round((correctCount/5)/timeElasped)
 
   }
 
@@ -132,12 +140,16 @@ function PracticeLevelPage(){
     setFeedBack("")
     setCurrentLetter(getCurrentLetter())
     setIsPaused(false)
+    setPauseDuration(0)
   }
   if(!level) return <p>Level not found!!</p>
 
 
 
+
 return (
+
+
   <div className="practice-play-container">
 
     <h1>{level.name} Practice</h1>
@@ -153,7 +165,7 @@ return (
         <p>Typed: {correctCount + incorrectCount}</p>
 
         <div className="pause_pop" style={{display: isPaused ? 'flex' :'none' }}>
-          <button onClick={()=>setIsPaused(false)}>Continue</button>
+          <button onClick={handlePause}>Continue</button>
           <button onClick={restart}>Restart</button>
         <button ><Link to="/practice" style={{color:'white'}}>Levels Page</Link></button>
         </div>
@@ -178,4 +190,4 @@ return (
 
 
 
-export default PracticeLevelPage 
+export default PracticeLevelPage ;
