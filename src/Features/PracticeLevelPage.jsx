@@ -157,7 +157,7 @@ return (
       {!isFinished ? (
         <>
         <div className="container_items">
-        <button onClick={handlePause}>Pause</button>
+        <button onClick={handlePause}>{isPaused ? "Continue" : "Pause"}</button>
         <p>Correct: {correctCount}</p>
         <p>Incorrect: {incorrectCount}</p>
         <p>Accuracy: {getAccuracy()}%</p>
@@ -165,7 +165,7 @@ return (
         <p>Typed: {correctCount + incorrectCount}</p>
 
         <div className="pause_pop" style={{display: isPaused ? 'flex' :'none' }}>
-          <button onClick={handlePause}>Continue</button>
+         
           <button onClick={restart}>Restart</button>
         <button ><Link to="/practice" style={{color:'white'}}>Levels Page</Link></button>
         </div>
