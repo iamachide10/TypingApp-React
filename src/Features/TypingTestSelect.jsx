@@ -23,11 +23,15 @@ const TypingTestSelect =()=>{
 
 
     const handlePredefined =(passage)=>{
-        navigate("play", {
-            state:{
-                passage:passage.text ,duration , title:passage.title
-            }
-        })
+        if(duration){
+            navigate("play", {
+                state:{
+                    passage:passage.text ,duration , title:passage.title
+                }
+            })
+        }else{
+            alert("Choose duration")
+        }
     }
 
 
@@ -62,8 +66,10 @@ const TypingTestSelect =()=>{
                 Duration: 
                 <select value={ duration } onChange={(e) => setDuration(Number(e.target.value))}>
                     <option value={30}>30 seconds</option>
-                    <option value={30}>60 seconds</option>
-                    <option value={30}>120 seconds</option>
+                    <option value={60}>60 seconds</option>
+                    <option value={120}>120 seconds</option>
+                    <option value={300}>300 seconds</option>
+                    <option value={500}>500 seconds</option>
                 </select>
             </label>
             <button onClick={handleCustom}>Start Custom test</button>
