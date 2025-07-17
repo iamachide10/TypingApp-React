@@ -5,7 +5,7 @@ import './TypingTestPlayCss.css';
 
 const TypingTestPlay = () =>{
     const [accuracy,setAccuracy]=useState(0)
-    
+
     const [startTime,setStartTime] =useState(null)
     const [isFinished,setIsFinished] =useState(false)
     const [timeLeft , setTimeLeft] =useState(null)
@@ -15,7 +15,7 @@ const TypingTestPlay = () =>{
     const [isPaused , setIsPaused] = useState(false)
     
     const {state} =useLocation()
-    const {navigate} =useNavigate()
+   const navigate = useNavigate();
     const {passage, duration , title} = state || {}
 
     const handleStart =()=>{
@@ -88,9 +88,17 @@ const TypingTestPlay = () =>{
             return totalTyped ===0? 0: Math.round((correct/totalTyped) * 100)
         }
 
-        const handleRestart =()=>{
-            navigate("/test/play")
-        }
+const handleRestart = () => {
+  setAccuracy(0);
+  setStartTime(null);
+  setIsFinished(false);
+  setTimeLeft(null);
+  setPauseDuration(0);
+  setPausedStartTime(null);
+  setTextTyped("");
+  setIsPaused(false);
+};
+
         
     return (<>
 
