@@ -1,0 +1,17 @@
+.typing-input-container {
+  margin-top: 20px;
+}
+
+.typing-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.typing-input:focus {
+  border-color: #007bff;
+}

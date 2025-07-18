@@ -1,4 +1,6 @@
 import { useState,useEffect } from "react"
+import TypingBox from "./TypingBox";
+import TypingInput from "./TypingInput";
 import { useLocation ,useNavigate} from "react-router-dom"
 import './TypingTestPlayCss.css';
 
@@ -55,16 +57,24 @@ const TypingTestPlay = () =>{
             const timeLefts = duration - timeElasped
             setTimeLeft(timeLefts)
 
-            if(timeLefts <=0){
+            if(timeLefts <=0 ){
                 clearInterval(interval)
                 setIsFinished(true)
             }
+          
         },1000)
         
         return ()=> clearInterval(interval)
         } , [isFinished,startTime,duration])
 
 
+
+
+        useEffect(()=>{
+            if(textTyped.trim() === passage.trim()){
+                setIsFinished(true)
+            }
+        },[textTyped,passage])
 
 
         const getWPM =()=>{
@@ -102,15 +112,14 @@ const handleRestart = () => {
         
     return (<>
 
-    <div className="typing-play-container">#
-        <p>{getAccuracy()}</p>
-        <h2>{title}</h2>
-        <p><strong>Time Left:</strong> {timeLeft} s</p>
-        <div className="test-passage">{passage}</div>
+    <div className="typing-play-container">
 
 
     {!isFinished ? (
-        <textarea value={textTyped} onChange={(e)=>setTextTyped(e.target.value)} placeholder="Start Typing here ..." autoFocus></textarea>
+        <div>
+        <TypingBox text={passage} userInput={textTyped} />
+          <TypingInput userInput={textTyped} setUserInput={setTextTyped} />
+        </div>
     ):
     (<div className="test-results">
         <h3>Test Completed</h3>

@@ -1,0 +1,19 @@
+.typing-box {
+  background-color: #f4f4f4;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  font-family: monospace;
+  font-size: 24px;
+  max-height: 200px;
+  overflow-y: scroll;
+
+}
+
+.correct {
+  color: rgb(9, 247, 9);
+}
+
+.incorrect {
+  color: red;
+}
