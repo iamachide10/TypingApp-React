@@ -9,7 +9,7 @@ const AccountSettings =()=>{
     const handleSave=()=>{
         const settins={
             name,
-            password,
+            ...(password && {password}),
             email
         }
 
