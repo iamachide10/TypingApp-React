@@ -2,6 +2,8 @@ import { useState ,useEffect} from "react";
 import './PracticeLevelPageCss.css';
 import { useParams } from "react-router-dom"
 import { Link } from "react-router-dom";
+
+
 const levels = {
   level1: { name: "ASDF", keys: ["a", "s", "d", "f"] },
   level2: { name: "JKL;", keys: ["j", "k", "l", ";"] },
@@ -33,14 +35,14 @@ function PracticeLevelPage(){
 
 
 
-
+  //This use effect set current letter the moment the level changes
     useEffect(() =>{
         if(level) {
             setCurrentLetter(getCurrentLetter())
         }   
     } ,[level])
 
-
+    //function to get current letter 
     const getCurrentLetter=()=>{
         const keys=level.keys
          const index = Math.floor(Math.random() * keys.length) 
@@ -48,7 +50,7 @@ function PracticeLevelPage(){
         return newLetter
     }
 
-
+//This is the logic use to controll the pause system
     const handlePause=()=>{
       if(!isPaused ){
         setPausedStartime(Date.now()) 
@@ -61,6 +63,7 @@ function PracticeLevelPage(){
       setIsPaused(prev =>!prev)
     }
    
+    //This is use to track the key pressed
   const handleKeyPress=(e)=>{
                  
     if(isFinished || isPaused) return ;
@@ -69,10 +72,9 @@ function PracticeLevelPage(){
         setStartTime(Date.now())
     }
 
+  const keyPressed = e.key.toLowerCase();
 
-    const keyPressed = e.key.toLowerCase();
   if(keyPressed!=='escape'){
-
     if(currentLetter.toLowerCase() === keyPressed){
         setFeedBack('Correct!!')
         setCorrectCount(prev=>prev +1)
@@ -83,29 +85,28 @@ function PracticeLevelPage(){
         setIncorrectCount(prev=>prev +1)
     }
   }
-
-
     if(correctCount + incorrectCount +1  >=30){
         setIsFinished(true)
-  
     }else{
         setCurrentLetter(getCurrentLetter())
     }
-    
   }
    
-  
+//htis onw handles the key pressed for the paused button
   useEffect(() => {
-    window.addEventListener("keydown", pause);
-    
+    window.addEventListener("keydown", pause); 
     return () => window.removeEventListener("keydown", pause);
   });
+
+
+//This useEffect handles the the key pressed 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyPress);
-    
+    window.addEventListener("keydown", handleKeyPress); 
     return () => window.removeEventListener("keydown", handleKeyPress);
   });
 
+
+//This handles the pause we press on escape
   const pause = (e) => {
     if (e.key === 'Escape' || e.keyCode === 27) {
       handlePause();
@@ -113,13 +114,15 @@ function PracticeLevelPage(){
   };
 
  
-  
+//This calculate the accuracy for us  
   const getAccuracy = () =>{
     const total = correctCount + incorrectCount;
     return total ===0? 0:Math.round((correctCount/total)*100)
 
   }
 
+
+  //This calculate the WPM for us 
   const getWPM = ()=>{
     if(!startTime) return 0;
     const now= Date.now();
@@ -129,9 +132,9 @@ function PracticeLevelPage(){
     const activeTime = now -startTime-totalPaused;
     const timeElasped = activeTime/1000/60;
     return timeElasped ===0 ? 0: Math.round((correctCount/5)/timeElasped)
-
   }
 
+  //This handles the restart button, sets everything to the start
   const restart=()=>{
     setCorrectCount(0)
     setIncorrectCount(0)
@@ -142,14 +145,13 @@ function PracticeLevelPage(){
     setIsPaused(false)
     setPauseDuration(0)
   }
+
+//This place displays when the level you clicked is not found
   if(!level) return <p>Level not found!!</p>
 
-
-
+//This displays everything to you
 
 return (
-
-
   <div className="practice-play-container">
 
     <h1>{level.name} Practice</h1>
@@ -186,8 +188,6 @@ return (
      </div>
   );
 }
-
-
 
 
 export default PracticeLevelPage ;
