@@ -1,0 +1,25 @@
+.themeContainer{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+
+.settingGroup{
+    display: flex;
+    flex-direction: column;
+    gap: 6px
+}
+.settingGroup label{
+   font-weight: 500;
+   color: #333;
+
+}
+.settingGroup select{
+   padding: 8px;
+   border-radius: 5px;
+   border: 1px solid #ccc;
+}
+

@@ -1,0 +1,43 @@
+.container{
+    min-height: 100vh;
+    background-color: #f3f3f3;
+    padding: 20px;
+}
+
+.header{
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.tabList{
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+}
+
+.tabButton{
+    padding: 10px 16px;
+    border:  none;
+    border-radius: 6px;
+    background-color: #e0e0e0;
+    color: #333;
+    cursor: pointer;
+    transition:  background-color 0.2 ease;
+    &:hover{
+        background-color:#ccc ;
+    }
+}
+
+.activeTab{
+    background-color:#007bff ;
+    color: #fff;
+}
+
+.tabContent{
+background-color:#fff;
+padding: 20px;
+border-radius: 20px;
+box-shadow: 0 1px 6px rgba(0 ,0 ,0, 0.1);
+}

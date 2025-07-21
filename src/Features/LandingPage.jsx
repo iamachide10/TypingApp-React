@@ -20,8 +20,8 @@ function LandingPage(){
             <button >Test</button>
             </Link>
             
-            <Link to="/game" >
-            <button >Game</button>
+            <Link to="/settings" >
+            <button >Settings</button>
             </Link>
            </div>
 
