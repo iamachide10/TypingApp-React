@@ -23,6 +23,14 @@ function LandingPage(){
             <Link to="/settings" >
             <button >Settings</button>
             </Link>
+            
+            <Link to="/login" >
+            <button >Log In</button>
+            </Link>
+            
+            <Link to="/create_account" >
+            <button >Sing Up</button>
+            </Link>
            </div>
 
         </div>
