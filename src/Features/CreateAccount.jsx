@@ -1,6 +1,8 @@
 import { useState } from "react";
+import styles from  "./createAccountCss.module.css"
 
-const createAccount=()=>{
+
+function CreateAccount(){
     const [preview,setPreview]=useState("")
     const [name,setName]=useState("")
     const [email,setEmail]=useState("")
@@ -20,7 +22,7 @@ const createAccount=()=>{
 
     }
 
-    const handleImageChange =()=>{
+    const handleImageChange =(e)=>{
         const file=e.target.files[0]
         if(file){
             setProfilePic(file)
@@ -30,7 +32,7 @@ const createAccount=()=>{
 
     return(
         <div className={styles.container}>
-            <h2>Create Account</h2>
+            <h2 className={styles.main}>Create Account </h2>
             <form onSubmit={handleSubmit}>
                 <div className={styles.imageSection}>
                     {preview && <img src={preview} alt="Preview" className={styles.preview} />}
@@ -62,3 +64,6 @@ const createAccount=()=>{
         </div>
     )
 }
+
+
+export default CreateAccount

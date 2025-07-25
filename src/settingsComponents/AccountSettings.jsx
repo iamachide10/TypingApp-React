@@ -1,6 +1,7 @@
 import { useState } from "react"
 import styles from  "./AccountSettings.module.css"
 
+
 const AccountSettings =()=>{
     const [name,setName]=useState("User 1.0")
     const [email,setEmail]=useState("User 1.0@gmail.com")
