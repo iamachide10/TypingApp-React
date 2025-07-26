@@ -6,7 +6,7 @@ import PracticeLevelPage from "./Features/PracticeLevelPage";
 import TypingTestPlay from "./Features/TypingTestPlay";
 import Settings from "./settingsComponents/Settings";
 import CreateAccount from "./Features/CreateAccount";
-import LogIn from "./Features/login";
+import Login from "./Features/login";
 function App() {
   return (
       <Routes>
@@ -16,7 +16,7 @@ function App() {
         <Route path="/settings" element ={<Settings/>} />
         <Route path="/test/play" element ={<TypingTestPlay/>} />
         <Route path="/practice/:levelId" element ={<PracticeLevelPage/>} />
-        <Route path="/login" element ={<LogIn/>} />
+        <Route path="/login" element ={<Login/>} />
         <Route path="/create_account" element ={<CreateAccount/>} />
       </Routes>
   );

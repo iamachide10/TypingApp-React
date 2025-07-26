@@ -10,7 +10,7 @@ function CreateAccount(){
     const [confirmPassword,setconfirmPassword]=useState("")
     const [profilePic ,setProfilePic]=useState(null)
 
-    const handleSubmit =(e)=>{
+    const handleSubmit = async(e)=>{
       e.preventDefault()
 
       if(password !==confirmPassword){
@@ -18,8 +18,24 @@ function CreateAccount(){
         return
       }
 
-      alert("Account created succesfully.")
-
+      const dataContainer= new FormData();
+      dataContainer.append("email",email)
+      dataContainer.append("name",name)
+      dataContainer.append("password",password)
+      if(profilePic){
+        dataContainer.append("profile_image", profilePic)
+      }
+      try{
+        const url="http://127.0.0.1:5000/sign_in"
+        const options={
+            method: "POST",
+            body:dataContainer
+        }
+        const response=await  fetch(url,options)
+        alert("User created succesfully")
+      }catch(error){
+        alert(error)
+      } 
     }
 
     const handleImageChange =(e)=>{
