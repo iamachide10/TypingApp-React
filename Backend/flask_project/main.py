@@ -27,7 +27,7 @@ def settings(user_id):
     else:
         general = GeneralSettings(user_id=user_id)
         db.session.add(general)
-    
+    #for general settings
     general.duration = general_data.get("duration",general.duration)
     general.difficulty = general_data.get("difficulty",general.difficulty)
     general.auto_stat_text = general_data.get("auto_stat_text",general.auto_stat_text)
