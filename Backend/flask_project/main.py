@@ -1,4 +1,4 @@
-from flask import Flask,request,jsonify,Blueprint 
+from flask import Flask,request,jsonify
 from flask_cors import CORS 
 from config import Config
 from models import User,db
@@ -10,12 +10,11 @@ app = Flask(__name__)
 
 CORS(app)
 app.config.from_object(Config)
-db.init_app(app) 
-settings_bp = Blueprint("settings",__name__)  
+db.init_app(app)   
 
 
 
-@settings_bp.route("/settings/<int:user_id>",methods=["POST"]) 
+@app.route("/settings/<int:user_id>",methods=["POST"]) 
 def settings(user_id):
     user = User.query.get(user_id)
     if not user:
@@ -99,7 +98,6 @@ def log_user():
     else:
         return jsonify({"Message":"invalid email and password"}),400  
 
-app.register_blueprint(settings_bp)
 if __name__=="__main__":
     with app.app_context():
         db.create_all()
