@@ -9,7 +9,6 @@ class User(db.Model):
     email = db.Column(db.String(120),unique = True,nullable = False) 
     password = db.Column(db.String(150),nullable = False)
     profile_image = db.Column(db.String(300))
-    
     general_settings = db.relationship("GeneralSettings",backref ="user",uselist = False)
     theme_settings = db.relationship("ThemeSettings",backref = "user",uselist = False)
 
