@@ -7,15 +7,28 @@ import os
 import uuid
 from flask_jwt_extended import JWTManager,create_access_token,create_refresh_token,set_access_cookies,set_refresh_cookies,jwt_required,get_jwt_identity,unset_jwt_cookies,decode_token
 from datetime import timedelta
-from flask_mail import Mail,Message
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail,Email,To,Content
+from PIL import Image
 
 app = Flask(__name__)
 CORS(app)
-mail = Mail()
 app.config.from_object(Config)
 db.init_app(app)
-mail.init_app(app)
 jwt = JWTManager(app)
+
+def send_emails(recipient,subject,body):
+    sg = SendGridAPIClient(api_key=app.config["SENDGRID_API_KEY"])
+    from_email = Email(app.config["FROM_EMAIL"],app.config["FROM_NAME"])
+    to_email = To(recipient)
+    content = Content("text/plain",body)
+    mail = Mail(from_email,to_email,subject,content)
+    try:
+       response = sg.send(mail)
+       return response.status_code
+    except Exception as e:
+       print(f"Error sending email:{e}")
+       return None 
 
 @app.route("/refresh-token",methods = ["POST"])
 @jwt_required(refresh = True)
@@ -48,14 +61,6 @@ def general_settings():
    
     db.session.commit()
     return jsonify({"Message":"General settings updated successfully"}),200
-
-def send_verification_email(user):
-    token = create_access_token(identity=user.id,expires_delta = timedelta(minutes=15))
-    verify_url = f"http://localhost:5000/verify_email?token={token}"
-    msg = Message(
-        subject = "Verify your email",sender = app.config["MAIL_DEFAULT_SENDER"],recipients=[user.email],body=f"Click this link to verify your email:{verify_url}"
-    )
-    mail.send(msg)
 
 @app.route("/custom-passage-settings",methods=["POST"])
 @jwt_required()
@@ -101,6 +106,24 @@ def theme_settings():
     db.session.commit()
     return jsonify({"Message":"Theme settings updated successfully"}),200
 
+def save_profile_picture(file,upload_folder,preferred_format="JPEG"):
+    try:
+       img = Image.open(file)
+       img.verify()
+
+       file.seek(0)
+       img = Image.open(file).convert("RGB")
+
+       filename = f"{uuid.uuid4().hex}.{preferred_format.lower()}"
+       os.makedirs(app.config["UPLOAD_FOLDER"],exist_ok=True)
+       save_path = os.path.join(upload_folder,filename)
+       
+       img.save(save_path,preferred_format)
+       return filename
+    except Exception as e:
+        print(f"error saving profile_pic:{e}")
+        return None
+
 @app.route("/sign-in",methods=["POST"]) 
 def register():
     name_user = request.form.get("name")  
@@ -110,26 +133,40 @@ def register():
 
     if not name_user or not user_email or not password:
         return jsonify({"Message":"Must include name,password and email"}),400
-    new_user=User(user_name = name_user,email = user_email) 
-    if new_user.is_verified:
-        return jsonify({"Message":"User already verified"})
-    if photo:
-        nice_name = secure_filename(photo.filename)
-        com = os.path.splitext(nice_name)[1]
-        unique_name = f"{uuid.uuid4().hex}{com}"
-        os.makedirs(app.config["UPLOAD_FOLDER"],exist_ok = True)
-        save_path = os.path.join(app.config["UPLOAD_FOLDER"],unique_name) 
-        photo.save(save_path) 
-
-        new_user.profile_image=unique_name
-    new_user.set_password(password)
-    try:
-        db.session.add(new_user)
-        db.session.commit()
-        send_verification_email(new_user)
-        return jsonify({"message":"User created successfully.Please verify your email."}),201
-    except Exception as e:
-        return jsonify({"Message":str(e)}),400    
+    existing_user = User.query.filter_by(email=user_email).first()
+    if existing_user and not existing_user.is_verified:
+        token = create_access_token(identity=existing_user.id)
+        subject = "Please verify your email"
+        body = f"Please click on this link to verify your email.\n\t{host_url}?token={token}"
+        status = send_emails(existing_user.email,subject,body)
+        if status == None:
+            return jsonify({"Message":"Something happened"}),500
+        else:
+            return jsonify({"Message":"Email sent successfully"}),202
+    elif existing_user and existing_user.is_verified:
+        return jsonify({"Message":"User already verified"}),202
+    else:
+        new_user = User(email = user_email,name=name_user) 
+        if photo:
+            profile = save_profile_picture(photo,app.config["UPLOAD_FOLDER"])
+            if profile == None:
+                return jsonify({"Message":"Something happened"}),500
+            else:
+                new_user.profile_image = profile
+        new_user.set_password(password)
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            token = create_access_token(identity=new_user.id)
+            subject= "Please verify your email"
+            body = f"Please click on this link to verify your email.\n\t{host_url}?token={token}"
+            check = send_emails(new_user.email,subject,body)
+            if check == None:
+                return jsonify({"Message":"Something happened when trying to send email"}),500
+            else:
+                return jsonify({"Message":"User created successfully,please verify your email"}),201
+        except Exception as e:
+            return jsonify({"Message":str(e)}),400    
 
 
 
@@ -219,7 +256,7 @@ def forgot_password():
     if not check_user:
         return jsonify({"Message":"Invalid email"})
     new_token = create_access_token(identity = check_user.id)
-    reset_link = f"http://localhost:3000/reset_password?token={new_token}"
+    reset_link = f"http://localhost:3000/reset-password?token={new_token}"
     msg = Message(
         subject = "Reset your password",
         sender = app.config["MAIL_DEFAULT_SENDER"],

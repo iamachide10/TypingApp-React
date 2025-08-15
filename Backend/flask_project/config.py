@@ -17,10 +17,7 @@ class Config:
     JWT_COOKIE_CSRF_PROTECT = True
     JWT_ACCESS_COOKIE_NAME = "mytypingApp_token_cookie"
     JWT_REFRESH_COOKIE_NAME = "my_token_cookie"
-    SECRET_KEY = os.environ.get("SECRET_KEY")
-    MAIL_SERVER = 'smtp.gmail.com'
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+    FROM_EMAIL = os.getenv("FROM_EMAIL")
+    FROM_NAME = os.getenv("FROM_NAME")
