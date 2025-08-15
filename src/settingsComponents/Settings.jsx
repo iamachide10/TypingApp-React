@@ -3,7 +3,6 @@ import AccountSettings from "./AccountSettings";
 import GeneralSettings from "./GeneralSettings";
 import ThemeSettings from "./ThemeSettings";
 import CustomPassageSettings from "./CustomPassageSettings";
-import GoalsSettings from "./GoalsSettings";
 import styles from "./Settings.module.css"
 
 function Settings() {
@@ -14,21 +13,18 @@ function Settings() {
     "Theme and display",
     "Custom Passages",
     "Account",
-    "Goals & History"
   ]
 
   const renderContent =()=>{
     switch(activeTab){
       case "General":
-        return <GeneralSettings/>
+        return <GeneralSettings />
       case "Theme and display":
         return <ThemeSettings/>
       case "Custom Passages":
         return <CustomPassageSettings/>
       case  "Account":
         return <AccountSettings/>
-      case  "Goals & History":
-        return <GoalsSettings/>
     }
   }
 

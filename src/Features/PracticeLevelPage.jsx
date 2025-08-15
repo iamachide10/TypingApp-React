@@ -3,7 +3,6 @@ import './PracticeLevelPageCss.css';
 import { useParams } from "react-router-dom"
 import { Link } from "react-router-dom";
 
-
 const levels = {
   level1: { name: "ASDF", keys: ["a", "s", "d", "f"] },
   level2: { name: "JKL;", keys: ["j", "k", "l", ";"] },
@@ -154,10 +153,10 @@ function PracticeLevelPage(){
 return (
   <div className="practice-play-container">
 
-    <h1>{level.name} Practice</h1>
-    <div>{startTime}</div>
+
       {!isFinished ? (
         <>
+        <h1>{level.name} Practice</h1>
         <div className="container_items">
         <button onClick={handlePause}>{isPaused ? "Continue" : "Pause"}</button>
         <p>Correct: {correctCount}</p>
@@ -177,13 +176,13 @@ return (
 
         </>
       ):(
-        <>
-      <h2>Level Completed !</h2>
-      <p>Final Accuracy: {getAccuracy()}</p>
+        <div>
+      <h2 className="test-results">Level Completed !</h2>
+      <p>Final Accuracy: {getAccuracy()}%</p>
       <p>WPM: {getWPM()}</p>
       <button onClick={restart}>Restart Level</button>
         <button ><Link to="/practice" style={{color:'white'}}>Levels Page</Link></button>
-      </>)}
+      </div>)}
 
      </div>
   );

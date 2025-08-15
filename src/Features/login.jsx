@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "./loginCss.css";
+
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -33,7 +35,6 @@ function Login() {
         const credentials = data.credentials;
         localStorage.setItem("user", JSON.stringify(credentials));
         window.location.href = "/"; // Redirect to the landing page after successful login
-
       }
      }catch(error){
       alert(error)
@@ -59,8 +60,8 @@ function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-
         <button type="submit">Log In</button>
+        <p><Link to="/request-reset">forgot password </Link></p>
       </form>
     </div>
   );

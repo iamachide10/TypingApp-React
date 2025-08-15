@@ -5,6 +5,7 @@ from models import User,db
 from werkzeug.utils import secure_filename
 import os
 import uuid
+from models import GeneralSettings,ThemeSettings
 
 app = Flask(__name__)
 
@@ -47,6 +48,7 @@ def settings(user_id):
     db.session.commit()
     return jsonify({"Message":"Settings updated successfully"}),200
 
+
 @app.route("/sign_in",methods=["POST"]) 
 def register():
     name_user = request.form.get("name")  
@@ -55,7 +57,7 @@ def register():
     photo = request.files.get("profile_image")
 
     if not name_user or not user_email or not password:
-        return jsonify({"Message":"Must include name,password and email"}),400
+        return jsonify({"message":"Must include name,password and email"}),400
     new_user=User(user_name = name_user,email = user_email,password = password) 
     if photo:
         nice_name = secure_filename(photo.filename)
@@ -72,7 +74,7 @@ def register():
         db.session.commit()
         return jsonify({"message":"User created successfully"}),200
     except Exception as e:
-        return jsonify({"Message":str(e)}),400    
+        return jsonify({"message":str(e)}),400    
 
 
 
@@ -97,6 +99,8 @@ def log_user():
         return jsonify({"message":"User login successful","credentials":{"name":user_login.user_name,"email":user_login.email ,"user_id":user_login.id}}),200
     else:
         return jsonify({"Message":"invalid email and password"}),400  
+
+
 
 if __name__=="__main__":
     with app.app_context():

@@ -32,7 +32,9 @@ function CreateAccount(){
             body:dataContainer
         }
         const response=await  fetch(url,options)
-        alert("User created succesfully")
+        const data=await response.json()
+        const m= data.message
+        alert(m)
       }catch(error){
         alert(error)
       } 
@@ -47,7 +49,7 @@ function CreateAccount(){
     }
 
     return(
-        <div className={styles.container}>
+        <div className="login-container">
             <h2 className={styles.main}>Create Account </h2>
             <form onSubmit={handleSubmit}>
                 <div className={styles.imageSection}>
@@ -59,7 +61,7 @@ function CreateAccount(){
                     <label> Full Name</label>
                     <input type="text" required value={name}  onChange={(e)=>setName(e.target.value)}/>
                 </div>
-
+                
                 <div className={styles.inputGroup}>
                     <label >Email</label>
                     <input type="text" required value={email} onChange={e=>setEmail(e.target.value)} />

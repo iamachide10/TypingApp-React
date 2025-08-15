@@ -1,24 +1,50 @@
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import styles from "./GeneralSettings.module.css"
 
 const GeneralSettings =()=>{
+    const [user, setUser] = useState(null);
     const [duration,setDuration]=useState("15")
     const [difficulty,setDifficulty]=useState("medium")
     const [mode,setMode]=useState("words")
     const [autoStart,setAutoStart]=useState(true)
     const [sound,setSound]=useState(true)
 
-    const handleSave =()=>{
-        const settings ={
+      useEffect(() => {
+        const userData = localStorage.getItem("user");
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      }, []);
+
+      const userId = user ? user.user_id : null;
+
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/settings/${userId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          generalSettings: {
             duration,
             difficulty,
-            mode,
-            autoStart,
-            sound
-        }
-        console.log("These settings were saved",settings);
-        alert("Settings saved succesfully")
-        }
+            auto_stat_text: autoStart,
+            enable_sound_effect: sound,
+          }
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert("General settings updated successfully");
+      } else {
+        alert("Error: " + result.Message);
+      }
+    } catch (error) {
+      console.error("Request failed:", error);
+    }
+  };
 
     return(
         <div className={styles.generalContainer}>
