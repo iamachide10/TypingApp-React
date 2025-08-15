@@ -7,10 +7,14 @@ import TypingTestPlay from "./Features/TypingTestPlay";
 import Settings from "./settingsComponents/Settings";
 import CreateAccount from "./Features/CreateAccount";
 import Login from "./Features/login";
+import RequestReset from "./Features/RequestReset";
+import ResetPassaword from "./Features/ResetPassword";
 function App() {
   return (
       <Routes>
         <Route path="/" element ={<LandingPage/>} />
+        <Route path="/request-reset" element ={<RequestReset/>} />
+        <Route path="/reset-password" element ={<ResetPassaword/>} />
         <Route path="/test" element ={<TypingTestSelect/>} />
         <Route path="/practice" element ={<PracticeLevels/>} />
         <Route path="/settings" element ={<Settings/>} />
@@ -21,5 +25,6 @@ function App() {
       </Routes>
   );
 }
+
 
 export default App;
