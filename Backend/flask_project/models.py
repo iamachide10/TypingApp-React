@@ -7,12 +7,13 @@ class User(db.Model):
     id = db.Column(db.Integer,primary_key = True) 
     user_name = db.Column(db.String(100),nullable = False) 
     email = db.Column(db.String(120),unique = True,nullable = False)
-    is_verified = db.Column(db.Boolean,default = False) 
+    is_verified = db.Column(db.Boolean,default = True) 
     password = db.Column(db.String(150),nullable = False)
     profile_image = db.Column(db.String(300))
-    general_settings = db.relationship("GeneralSettings",backref ="user",uselist = False)
-    theme_settings = db.relationship("ThemeSettings",backref = "user",uselist = False)
-    passage_settings = db.relationship("CustomPassageSettings",backref="user",uselist = False) 
+    general_settings = db.relationship("GeneralSettings",backref ="user",uselist = False,lazy=True)
+    theme_settings = db.relationship("ThemeSettings",backref = "user",uselist = False,lazy=True)
+    passage_settings = db.relationship("CustomPassageSettings",backref="user",uselist = False,lazy=True) 
+    reset_tokens = db.relationship("ResetToken",backref="user", lazy = True)
 
     def set_password(self, password):
          self.password = generate_password_hash(password)
@@ -56,3 +57,10 @@ class CustomPassageSettings(db.Model):
     user_id = db.Column(db.Integer,db.ForeignKey("user.id"),nullable = False)
     passage = db.Column(db.String(300),nullable = False,default="Start typing here ...")
     title = db.Column(db.String(90),nullable = False,default="Untitled")
+
+class ResetToken(db.Model):
+    id = db.Column(db.Integer,primary_key = True)
+    user_id = db.Column(db.Integer,db.ForeignKey("user.id"),nullable = False)
+    token = db.Column(db.String(300),nullable = False,unique=True)
+    expires_at = db.Column(db.DateTime,nullable = False)
+    used = db.Column(db.Boolean,default = False)

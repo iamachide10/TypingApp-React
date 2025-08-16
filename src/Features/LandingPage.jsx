@@ -52,7 +52,7 @@ function LandingPage() {
         ) : (
           <>
             <div className="user-info">
-              <p>Welcome, {user.name}</p>
+              <p>Welcome, {user.userName}</p>
               {user.profile_image && (
                 <img
                   src={`http://localhost:5000/static/uploads/${user.profile_image}`}
