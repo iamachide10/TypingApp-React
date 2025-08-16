@@ -1,5 +1,7 @@
 from datetime import timedelta
 import os
+from dotenv import load_dotenv
+load_dotenv()
 #from dotenv import load_dotenv
 
 #load_dotenv()
@@ -17,4 +19,8 @@ class Config:
     JWT_COOKIE_CSRF_PROTECT = True
     JWT_ACCESS_COOKIE_NAME = "mytypingApp_token_cookie"
     JWT_REFRESH_COOKIE_NAME = "my_token_cookie"
-     
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+    FROM_EMAIL = os.getenv("FROM_EMAIL")
+    FROM_NAME = os.getenv("FROM_NAME")
+    

@@ -11,12 +11,12 @@ export default function ResetPassaword(){
 
     const handleSubmit =async (e)=>{
         e.preventDefault();
+  
     };
 
 
     return(
-        <div className="login-container">
-
+        <div className="login-container">  
         <form onSubmit={handleSubmit} className="login-form" >
             <h2>Reset Password</h2>
             <p>Password: </p>

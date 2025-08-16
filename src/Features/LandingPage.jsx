@@ -15,18 +15,20 @@ function LandingPage() {
     navigate("/login");
   }
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, []);
+ useEffect(() => {
+  const userData = localStorage.getItem("user");
+
+  // Check if it's not null and not the string "undefined"
+  if (userData && userData !== "undefined") {
+    setUser(JSON.parse(userData));
+  }
+}, []);
+
 
   return (
     <div className="home-container">
       <h1 className="home-title">Typing Mastry</h1>
       <p className="home-subtitle">Sharpen your typing skills with fun and effective modes!</p>
-
       <div className="menu-buttons">
         <Link to="/practice">
           <button className="menu-button">Practice</button>
@@ -63,7 +65,7 @@ function LandingPage() {
             <button onClick={handleLogout} className="menu-button secondary">Logout</button>
           </>
         )}
-     
+    
       </div>
       </div>
   );
