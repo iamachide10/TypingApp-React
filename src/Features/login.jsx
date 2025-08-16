@@ -27,15 +27,14 @@ function Login() {
      try{
       const response = await fetch(url, options)
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error("Login failed. Please check your credentials.");
-      }else{
+
         const message = data.message;
         alert(message);
         const credentials = data.credentials;
+
         localStorage.setItem("user", JSON.stringify(credentials));
         window.location.href = "/"; // Redirect to the landing page after successful login
-      }
+      
      }catch(error){
       alert(error)
      }

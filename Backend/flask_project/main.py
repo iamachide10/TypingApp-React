@@ -10,6 +10,8 @@ from datetime import timedelta
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail,Email,To,Content
 from PIL import Image
+import secrets
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -31,12 +33,16 @@ def send_emails(recipient,subject,body):
        return None 
 
 @app.route("/refresh-token",methods = ["POST"])
-@jwt_required(refresh = True)
+@jwt_required()
 def refresh_access_token():
     current_user = get_jwt_identity()
-    new_access_token = create_access_token(identity = current_user)
+    if not current_user:
+        return jsonify({"message":"something went wrong"})
+    new_access_token = create_access_token(identity = current_user.id)
+    new_refresh_token = create_refresh_token(identity = current_user.id)
     response = jsonify({"message":"Token refreshed successfully"})
     set_access_cookies(response,new_access_token)
+    set_refresh_cookies(response,new_refresh_token)
     return response
 
 @app.route("/general-settings",methods=["POST"])
@@ -60,7 +66,7 @@ def general_settings():
     general.enable_sound_effect = general_data.get("enable_sound_effect",general.enable_sound_effect)
    
     db.session.commit()
-    return jsonify({"Message":"General settings updated successfully"}),200
+    return jsonify({"message":"General settings updated successfully"}),200
 
 @app.route("/custom-passage-settings",methods=["POST"])
 @jwt_required()
@@ -111,19 +117,21 @@ def register():
 
     # <-- This was unreachable before
     existing_user = User.query.filter_by(email=user_email).first()
+    if existing_user:
+        if existing_user or existing_user.is_verified:
+            return jsonify({"message": "User already exists"}), 202
 
-    if existing_user and existing_user.is_verified:
-        return jsonify({"message": "User already verified"}), 202
-
-    elif existing_user and not existing_user.is_verified:
-        token = create_access_token(identity=existing_user.id)
-        subject = "Please verify your email"
-        body = f"Please click on this link to verify your email.\n\t{request.host_url}? verify-emailtoken={token}"
-        status = send_emails(existing_user.email, subject, body)
-        if status is None:
-            return jsonify({"message": "Something happened"}), 500
-        else:
-            return jsonify({"message": "Email sent successfully"}), 202
+        elif existing_user and not existing_user.is_verified:
+            token = create_access_token(identity=existing_user.id)
+            subject = "Please verify your email"
+            body = f"Please click on this link to verify your email.\n\t{request.host_url}verify-email?token={token}"
+            status = send_emails(existing_user.email,subject,body)
+            if status == None:
+                return jsonify({"Message":"Something happened"}),500
+            else:
+                return jsonify({"Message":"A link has been sent to your inbox, click it to verify your email"}),202
+        elif existing_user and existing_user.is_verified:
+            return jsonify({"Message":"User already verified"}),202
     else:
         new_user = User(email=user_email, user_name=name_user)
 
@@ -139,12 +147,15 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             token = create_access_token(identity=new_user.id)
-            subject = "Please verify your email"
-            body = f"Please click on this link to verify your email.\n\t{request.host_url}?token={token}"
-            check = send_emails(new_user.email, subject, body)
-            if check is None:
-                return jsonify({"message": "Something happened when trying to send email"}), 500
-            return jsonify({"message": "User created successfully, please verify your email"}), 201
+            subject= "Please verify your email"
+            body = f"Please click on this link to verify your email.\n\t{request.host_url}verify-email?token={token}"
+            check = send_emails(new_user.email,subject,body)
+            if check == None:
+                return jsonify({"message":"Something happened when trying to send email"}),500
+            else:
+                return jsonify({"message":"User created successfully,please verify your email", "credentials":new_user.to_dic()}),201
+        except Exception as e:
+            return jsonify({"message":str(e)}),400    
 
         except Exception as e:
             return jsonify({"message": str(e)}), 400
@@ -159,7 +170,46 @@ def display_users():
     return jsonify({"users":pupils_json})
 
 
-           
+@app.route("/login", methods=["POST"])
+def log_user():
+    user_email = request.json.get("email")
+    user_password = request.json.get("password")
+
+    if not user_email or not user_password:
+        return jsonify({"message": "Email and password required"}), 400
+
+    user_email = user_email.lower()
+    user_login = User.query.filter_by(email=user_email).first()
+
+    if not user_login:
+        return jsonify({"message": "Invalid email or password"}), 401
+
+    # Debugging line
+    print(user_login.to_dic())
+
+    if user_login.check_password(user_password):
+        if user_login.is_verified:
+            access_token = create_access_token(identity=user_login.id)
+            refresh_token = create_refresh_token(identity=user_login.id)
+            return jsonify({
+                "message": "User login successfully",
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "credentials":user_login.to_dic(),
+            })
+        else:
+            token = create_access_token(identity=user_login.id)
+            subject = "Verify your email"
+            body = f"Please click this link to verify your email:\n\n{request.host_url}verify-email?token={token}"
+            status = send_emails(user_login.email, subject, body)
+
+            if status == 202:
+                return jsonify({"message": "A link has been sent to your inbox, kindly verify your email"})
+            else:
+                return jsonify({"message": "Something went wrong, couldn't send the email"})
+    else:
+        return jsonify({"message": "Invalid email or password"}), 401
+
 @app.route("/logout",methods = ["POST"])
 @jwt_required()
 def log_out():
@@ -202,52 +252,63 @@ def new_verification():
         return jsonify({"Message":"User not found"}),404
     if person.is_verified:
         return jsonify({"Message":"User already verified"}),400
-    send_verification_email(person)
-    return jsonify({"Message":"Verification email resent successfully"}),200
+    else:
+        token = create_access_token(identity=person.id)
+        subject = "Please verify your email"
+        body = f"Please click on this link to verify your email.\n{request.host_url}verify-email?token={token}"
+        status = send_emails(person.email,subject,body)
+        if status == 202:
+            return jsonify({"Message":"verification resend again"}),200
+        else:
+            return jsonofy({"Message":"Something happened"})
 
 @app.route("/forgot-password",methods = ["POST"])
 def forgot_password():
     email = request.json.get("email")
     if not email:
-        return jsonify({"Message":"Email not found"}),404
+        return jsonify({"message":"Email required"}),400
     check_user = User.query.filter_by(email = email).first()
-    if not check_user:
-        return jsonify({"Message":"Invalid email"})
-    new_token = create_access_token(identity = check_user.id)
-    reset_link = f"http://localhost:3000/reset-password?token={new_token}"
-    msg = Message(
-        subject = "Reset your password",
-        sender = app.config["MAIL_DEFAULT_SENDER"],
-        recipients = [check_user.email],
-        body = f"Click on this link to reset your password:\n{reset_link}"
-    )
-    mail.send(msg)
-    return jsonify({"Message":"Reset link sent to email"}),200
+    if check_user:
+        reset_token = secrets.token_urlsafe(32)
+        expiry_time = datetime.utcnow() + timedelta(minutes=15)
+        reset_entry = ResetToken(user_id=check_user.id,expires_at=expiry_time)
+        hashed_token = set_password(reset_token)
+        reset_entry.token = hashed_token
+        db.session.add(reset_entry)
+        db.session.commit()
+        subject = "Reset your password if you want to"
+        body = f"if you want to reset your password,click on this link.\n\t{request.host_url}reset-password?token={reset_token}"
+        status = send_emails(check_user.email,subject,body)
+        if status != 202:
+            return jsonify({"message":"Couldn't send email"})
+        return jsonify({"message":"if an account with that email exist, we've sent a reset link"})
 
 @app.route("/reset-password",methods = ["POST"])
 def new_password():
     token = request.args.get("token")
-    try:
-        decoded = decode_token(token)
-        user_id = decoded["sub"]
-    except Exception as e:
-        return jsonify({"Message":str(e)}),500
-    check = User.query.get(user_id)
-    if not check:
-        return jsonify({"Message":"User not found"}),404
+    if not token:
+        return jsonify({"message":"Invalid request"}),400
+    verify = ResetToken.query.filter_by(token = token).first()
+    if not verify:
+        return jsonify({"message":"Invalid or non-existent token"}),404
+    if verify.used:
+        return jsonify({"message":"This token has already been used"}),400
+    if verify.expires_at < datetime.utcnow():
+        return jsonify({"message":"This token has expired"}),400
+        
     data = request.get_json()
-    new_password = data.get("password")
+    new_password = data.get("password",None)
     if not new_password:
-        return jsonify({"Message":"Must type in new password"}),404
+        return jsonify({"Message":"Must type in new passw2ord"}),400
     if len(new_password) < 8:
-        return jsonify({"Message":"Password must have at least 8 characters"})
+        return jsonify({"Message":"Password must have at least 8 characters"}),400
     if not any(c.isupper() for c in new_password):
-        return jsonify({"Message":"Must include at least one capital letter"})
+        return jsonify({"Message":"Must include at least one capital letter"}),400
     if not any(c.islower() for c in new_password):
-        return jsonify({"Message":"Must have at least a small letter"})
+        return jsonify({"Message":"Must have at least a small letter"}),400
     if not any(c.isdigit() for c in new_password):
-        return jsonify({"Message":"Must have at least a digit"})
-    check.set_password(new_password)
+        return jsonify({"Message":"Must have at least a digit"}),400
+    verify.user.set_password(new_password)
     db.session.commit()
     return jsonify({"Message":"Password reset successfully"}),200
 
