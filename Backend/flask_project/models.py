@@ -24,11 +24,12 @@ class User(db.Model):
 
     def to_dic(self):
         return {
-            "id":self.id,
+            "user_id":self.id,
             "userName":self.user_name,
             "profile_image":self.profile_image,
             "email":self.email,
             "Verified":self.is_verified
+            
         }
 
 
@@ -40,16 +41,40 @@ class GeneralSettings(db.Model):
     difficulty = db.Column(db.String(20), default="medium")
     auto_stat_text = db.Column(db.Boolean,default = False)
     enable_sound_effect = db.Column(db.Boolean,default = False)
+    test_mode = db.Column(db.String(20) ,default = "words")
 
+
+
+    def to_dic(self):
+        return {
+            "user_id":self.user_id,
+            "duration":self.duration,
+            "difficulty":self.difficulty,
+            "auto_stat_text":self.auto_stat_text,
+            "enable_sound_effect":self.enable_sound_effect,
+            "test_mode":self.test_mode
+        }
 
 
 class ThemeSettings(db.Model):
-    id = db.Column(db.Integer,primary_key = True)
-    user_id = db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False)
-    theme_mode = db.Column(db.String(20),default = "white")
-    accent_color = db.Column(db.String(20),default = "blue")
-    text_size = db.Column(db.String(30),default = "small")
-    font_style = db.Column(db.String(30),default = "monospace")
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    theme_mode = db.Column(db.String(20), default="white")
+    accent_color = db.Column(db.String(20), default="blue")
+    text_size = db.Column(db.String(30), default="small")
+    font_style = db.Column(db.String(30), default="monospace")
+
+    def to_dict(self):
+        return {
+            "user_id": self.user_id,
+            "theme_mode": self.theme_mode,
+            "accent_color": self.accent_color,
+            "text_size": self.text_size,
+            "font_style": self.font_style,
+        }
+
+
+ 
 
 
 class CustomPassageSettings(db.Model):

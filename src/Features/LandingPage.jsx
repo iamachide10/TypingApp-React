@@ -22,6 +22,7 @@ function LandingPage() {
   if (userData && userData !== "undefined") {
     setUser(JSON.parse(userData));
   }
+  console.log("User data:", userData);
 }, []);
 
 
@@ -55,10 +56,10 @@ function LandingPage() {
               <p>Welcome, {user.userName}</p>
               {user.profile_image && (
                 <img
-                  src={`http://localhost:5000/static/uploads/${user.profile_image}`}
+                  src={`http://localhost:5000/uploads/${user.profile_image}`}
                   alt="Profile"
                   width="60"
-                  style={{ borderRadius: "50%", marginTop: "10px" }}
+                  style={{ borderRadius: "50%", marginTop: "10px"  ,  height: "60px", width: "60px"  }}
                 />
               )}
             </div>

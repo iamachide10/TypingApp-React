@@ -1,4 +1,4 @@
-from flask import Flask,request,jsonify
+from flask import Flask,request,jsonify,send_from_directory
 from flask_cors import CORS 
 from config import Config
 from models import User,GeneralSettings,ThemeSettings,db,CustomPassageSettings
@@ -16,8 +16,24 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)
+app.config["UPLOADS"] ="shark/uploads" 
 db.init_app(app)
 jwt = JWTManager(app)
+
+def save_profile_picture(file,upload_folder,preferred_format='JPEG'):
+    try:
+        img =Image.open(file)
+        img.verify()
+        file.seek(0)
+        image=Image.open(file).convert('RGB')
+        filename=f'{uuid.uuid4().hex}.{preferred_format.lower()}'
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        save_path = os.path.join(upload_folder,filename)
+        image.save(save_path)
+        return filename
+    except Exception as e:
+        print(f'error saving profile_pic:{e}')
+        return None
 
 def send_emails(recipient,subject,body):
     sg = SendGridAPIClient(api_key=app.config["SENDGRID_API_KEY"])
@@ -45,10 +61,15 @@ def refresh_access_token():
     set_refresh_cookies(response,new_refresh_token)
     return response
 
-@app.route("/general-settings",methods=["POST"])
-@jwt_required() 
-def general_settings():
-    user_id = get_jwt_identity()
+
+
+
+
+
+@app.route("/general-settings/<int:user_id>",methods=["POST"])
+#@jwt_required() 
+def general_settings(user_id):
+    #user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message":"User not found"})
@@ -64,14 +85,28 @@ def general_settings():
     general.difficulty = general_data.get("difficulty",general.difficulty)
     general.auto_stat_text = general_data.get("auto_stat_text",general.auto_stat_text)
     general.enable_sound_effect = general_data.get("enable_sound_effect",general.enable_sound_effect)
-   
+    general.test_mode = general_data.get("test_mode",general.test_mode)
+    print(general.to_dic())  
     db.session.commit()
-    return jsonify({"message":"General settings updated successfully"}),200
+    return jsonify({"message":"General settings updated successfully", "settings":general.to_dic()}),200
 
-@app.route("/custom-passage-settings",methods=["POST"])
-@jwt_required()
-def passage_settings():
-    user_id = get_jwt_identity()
+
+@app.route("/general-settings/<int:user_id>", methods=["GET"])
+# @jwt_required()
+def get_general_settings(user_id):
+    # user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"Message": "User not found"}), 404
+    if not user.general_settings:
+        return jsonify({"Message": "No general settings found"}), 404
+    return jsonify(user.general_settings.to_dic()), 200
+
+
+@app.route("/custom-passage-settings/<int:user_id>",methods=["POST"])
+#@jwt_required()
+def passage_settings(user_id):
+    #user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message":"User not found"}),404
@@ -87,22 +122,51 @@ def passage_settings():
     settings.title = verify.get("title",settings.title)
     db.session.commit()
 
-    return jsonify({"Message":"Passage settings updated successfullu"}),200
+    return jsonify({"message":"Passage settings updated successfullu"}),200
 
-@app.route("/theme-settings",methods = ["POST"])
-@jwt_required()
-def theme_settings():
-    verify = get_jwt_identity()
-    person = User.query.get(verify)
+
+
+@app.route("/theme-settings/<int:user_id>", methods=["POST"])
+##@jwt_required()
+def theme_settings(user_id):
+    #verify = get_jwt_identity()
+    person = User.query.get(user_id)
+
     if not person:
-        return jsonify({"Message":"User not found"})
+        return jsonify({"Message": "User not found"}), 404
+
     data = request.get_json()
-    theme_data = data.get("themeSettings",{})
+    theme_data = data.get("themeSettings", {})
+
+    # check if user already has theme settings
     if person.theme_settings:
         theme = person.theme_settings
     else:
         theme = ThemeSettings(user_id=verify)
         db.session.add(theme)
+
+    # update theme settings
+    theme.theme_mode = theme_data.get("theme_mode", theme.theme_mode)
+    theme.accent_color = theme_data.get("accent_color", theme.accent_color)
+    theme.text_size = theme_data.get("text_size", theme.text_size)
+    theme.font_style = theme_data.get("font_style", theme.font_style)
+
+    print(theme.to_dict())  # for debugging
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Theme settings updated successfully",
+        "settings": theme.to_dict()
+    }), 200
+
+
+
+
+
+
+
+
 
 
 @app.route("/sign_in", methods=["POST"]) 
@@ -117,21 +181,19 @@ def register():
 
     # <-- This was unreachable before
     existing_user = User.query.filter_by(email=user_email).first()
-    if existing_user:
-        if existing_user or existing_user.is_verified:
+   
+    if existing_user and  existing_user.is_verified:
             return jsonify({"message": "User already exists"}), 202
 
-        elif existing_user and not existing_user.is_verified:
+    elif existing_user and not existing_user.is_verified:
             token = create_access_token(identity=existing_user.id)
             subject = "Please verify your email"
             body = f"Please click on this link to verify your email.\n\t{request.host_url}verify-email?token={token}"
             status = send_emails(existing_user.email,subject,body)
             if status == None:
-                return jsonify({"Message":"Something happened"}),500
+                return jsonify({"message":"Something happened"}),500
             else:
-                return jsonify({"Message":"A link has been sent to your inbox, click it to verify your email"}),202
-        elif existing_user and existing_user.is_verified:
-            return jsonify({"Message":"User already verified"}),202
+                return jsonify({"message":"A link has been sent to your inbox, click it to verify your email"}),202
     else:
         new_user = User(email=user_email, user_name=name_user)
 
@@ -161,6 +223,9 @@ def register():
             return jsonify({"message": str(e)}), 400
 
 
+
+
+
 @app.route("/")
 def display_users():
     pupils = User.query.all()
@@ -168,6 +233,9 @@ def display_users():
         return jsonify({"Message":"Couldn't get users"}),400
     pupils_json = [pupil.to_dic() for pupil in pupils] 
     return jsonify({"users":pupils_json})
+
+
+
 
 
 @app.route("/login", methods=["POST"])
@@ -182,10 +250,10 @@ def log_user():
     user_login = User.query.filter_by(email=user_email).first()
 
     if not user_login:
-        return jsonify({"message": "Invalid email or password"}), 401
+        return jsonify({"message": "User not found "}), 401
 
     # Debugging line
-    print(user_login.to_dic())
+  
 
     if user_login.check_password(user_password):
         if user_login.is_verified:
@@ -210,6 +278,9 @@ def log_user():
     else:
         return jsonify({"message": "Invalid email or password"}), 401
 
+
+
+
 @app.route("/logout",methods = ["POST"])
 @jwt_required()
 def log_out():
@@ -220,6 +291,10 @@ def log_out():
     response = jsonify({"Message":"User logged out successfully"}),200
     unset_jwt_cookies(response)
     return response
+
+
+
+
 
 @app.route("/verify-email",methods=["GET"])
 def verify_new():
@@ -242,6 +317,10 @@ def verify_new():
         return jsonify({"Message":"Email verified successfully"})
     except Exception as e:
         return jsonify({"Message":str(e)}),400  
+
+
+
+
 
 @app.route("/resend-verification",methods=["POST"])
 @jwt_required()
@@ -283,6 +362,12 @@ def forgot_password():
             return jsonify({"message":"Couldn't send email"})
         return jsonify({"message":"if an account with that email exist, we've sent a reset link"})
 
+
+
+
+
+
+
 @app.route("/reset-password",methods = ["POST"])
 def new_password():
     token = request.args.get("token")
@@ -312,6 +397,10 @@ def new_password():
     db.session.commit()
     return jsonify({"Message":"Password reset successfully"}),200
 
+
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOADS'], filename)
 
 
 if __name__=="__main__":

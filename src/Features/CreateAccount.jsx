@@ -31,8 +31,8 @@ function CreateAccount(){
             method: "POST",
             body:dataContainer
         }
-        const response=await  fetch(url,options)
-        const data=await response.json()
+                      const response=await  fetch(url,options)
+          const data=await response.json()
         const m= data.message
         alert(m)
       }catch(error){
@@ -64,7 +64,7 @@ function CreateAccount(){
                 
                 <div className={styles.inputGroup}>
                     <label >Email</label>
-                    <input type="text" required value={email} onChange={e=>setEmail(e.target.value)} />
+                    <input type="email" required value={email} onChange={e=>setEmail(e.target.value)} />
                 </div>
 
                 <div className={styles.inputGroup}>
