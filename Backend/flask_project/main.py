@@ -1,4 +1,4 @@
-from flask import Flask,request,jsonify
+from flask import Flask,request,jsonify,send_from_directory
 from flask_cors import CORS 
 from config import Config
 from models import User,GeneralSettings,ThemeSettings,db,CustomPassageSettings
@@ -16,8 +16,24 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)
+app.config["UPLOADS"] ="shark/uploads" 
 db.init_app(app)
 jwt = JWTManager(app)
+
+def save_profile_picture(file,upload_folder,preferred_format='JPEG'):
+    try:
+        img =Image.open(file)
+        img.verify()
+        file.seek(0)
+        image=Image.open(file).convert('RGB')
+        filename=f'{uuid.uuid4().hex}.{preferred_format.lower()}'
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        save_path = os.path.join(upload_folder,filename)
+        image.save(save_path)
+        return filename
+    except Exception as e:
+        print(f'error saving profile_pic:{e}')
+        return None
 
 def send_emails(recipient,subject,body):
     sg = SendGridAPIClient(api_key=app.config["SENDGRID_API_KEY"])
@@ -45,10 +61,15 @@ def refresh_access_token():
     set_refresh_cookies(response,new_refresh_token)
     return response
 
-@app.route("/general-settings",methods=["POST"])
-@jwt_required() 
-def general_settings():
-    user_id = get_jwt_identity()
+
+
+
+
+
+@app.route("/general-settings/<int:user_id>",methods=["POST"])
+#@jwt_required() 
+def general_settings(user_id):
+    #user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message":"User not found"})
@@ -64,14 +85,28 @@ def general_settings():
     general.difficulty = general_data.get("difficulty",general.difficulty)
     general.auto_stat_text = general_data.get("auto_stat_text",general.auto_stat_text)
     general.enable_sound_effect = general_data.get("enable_sound_effect",general.enable_sound_effect)
-   
+    general.test_mode = general_data.get("test_mode",general.test_mode)
+    print(general.to_dic())  
     db.session.commit()
-    return jsonify({"message":"General settings updated successfully"}),200
+    return jsonify({"message":"General settings updated successfully", "settings":general.to_dic()}),200
 
-@app.route("/custom-passage-settings",methods=["POST"])
-@jwt_required()
-def passage_settings():
-    user_id = get_jwt_identity()
+
+@app.route("/general-settings/<int:user_id>", methods=["GET"])
+# @jwt_required()
+def get_general_settings(user_id):
+    # user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"Message": "User not found"}), 404
+    if not user.general_settings:
+        return jsonify({"Message": "No general settings found"}), 404
+    return jsonify(user.general_settings.to_dic()), 200
+
+
+@app.route("/custom-passage-settings/<int:user_id>",methods=["POST"])
+#@jwt_required()
+def passage_settings(user_id):
+    #user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message":"User not found"}),404
@@ -87,50 +122,54 @@ def passage_settings():
     settings.title = verify.get("title",settings.title)
     db.session.commit()
 
-    return jsonify({"Message":"Passage settings updated successfullu"}),200
+    return jsonify({"message":"Passage settings updated successfullu"}),200
 
-@app.route("/theme-settings",methods = ["POST"])
-@jwt_required()
-def theme_settings():
-    verify = get_jwt_identity()
-    person = User.query.get(verify)
+
+
+@app.route("/theme-settings/<int:user_id>", methods=["POST"])
+##@jwt_required()
+def theme_settings(user_id):
+    #verify = get_jwt_identity()
+    person = User.query.get(user_id)
+
     if not person:
-        return jsonify({"Message":"User not found"})
+        return jsonify({"Message": "User not found"}), 404
+
     data = request.get_json()
-    theme_data = data.get("themeSettings",{})
+    theme_data = data.get("themeSettings", {})
+
+    # check if user already has theme settings
     if person.theme_settings:
         theme = person.theme_settings
     else:
         theme = ThemeSettings(user_id=verify)
         db.session.add(theme)
 
-    theme.theme_mode = theme_data.get("themeMode",theme.theme_mode)
-    theme.accent_color = theme_data.get("accentColor",theme.accent_color)
-    theme.text_size = theme_data.get("textSize",theme.text_size)
-    theme.font_style = theme_data.get("fontStyle",theme.font_style)
+    # update theme settings
+    theme.theme_mode = theme_data.get("theme_mode", theme.theme_mode)
+    theme.accent_color = theme_data.get("accent_color", theme.accent_color)
+    theme.text_size = theme_data.get("text_size", theme.text_size)
+    theme.font_style = theme_data.get("font_style", theme.font_style)
+
+    print(theme.to_dict())  # for debugging
 
     db.session.commit()
-    return jsonify({"Message":"Theme settings updated successfully"}),200
 
-def save_profile_picture(file,upload_folder,preferred_format="JPEG"):
-    try:
-       img = Image.open(file)
-       img.verify()
+    return jsonify({
+        "message": "Theme settings updated successfully",
+        "settings": theme.to_dict()
+    }), 200
 
-       file.seek(0)
-       img = Image.open(file).convert("RGB")
 
-       filename = f"{uuid.uuid4().hex}.{preferred_format.lower()}"
-       os.makedirs(app.config["UPLOAD_FOLDER"],exist_ok=True)
-       save_path = os.path.join(upload_folder,filename)
-       
-       img.save(save_path,preferred_format)
-       return filename
-    except Exception as e:
-        print(f"error saving profile_pic:{e}")
-        return None
 
-@app.route("/sign-in",methods=["POST"]) 
+
+
+
+
+
+
+
+@app.route("/sign_in", methods=["POST"]) 
 def register():
     name_user = request.form.get("name")  
     user_email = request.form.get("email") 
@@ -138,41 +177,52 @@ def register():
     photo = request.files.get("profile_image")
 
     if not name_user or not user_email or not password:
-        return jsonify({"Message":"Must include name,password and email"}),400
+        return jsonify({"message":"Must include name, password and email"}), 400
+
+    # <-- This was unreachable before
     existing_user = User.query.filter_by(email=user_email).first()
-    if existing_user and not existing_user.is_verified:
-        token = create_access_token(identity=existing_user.id)
-        subject = "Please verify your email"
-        body = f"Please click on this link to verify your email.\n\t{host_url}verify-email?token={token}"
-        status = send_emails(existing_user.email,subject,body)
-        if status == None:
-            return jsonify({"Message":"Something happened"}),500
-        else:
-            return jsonify({"Message":"A link has been sent to your inbox, click it to verify your email"}),202
-    elif existing_user and existing_user.is_verified:
-        return jsonify({"Message":"User already verified"}),202
-    else:
-        new_user = User(email = user_email,name=name_user) 
-        if photo:
-            profile = save_profile_picture(photo,app.config["UPLOAD_FOLDER"])
-            if profile == None:
-                return jsonify({"Message":"Something happened"}),500
+   
+    if existing_user and  existing_user.is_verified:
+            return jsonify({"message": "User already exists"}), 202
+
+    elif existing_user and not existing_user.is_verified:
+            token = create_access_token(identity=existing_user.id)
+            subject = "Please verify your email"
+            body = f"Please click on this link to verify your email.\n\t{request.host_url}verify-email?token={token}"
+            status = send_emails(existing_user.email,subject,body)
+            if status == None:
+                return jsonify({"message":"Something happened"}),500
             else:
-                new_user.profile_image = profile
+                return jsonify({"message":"A link has been sent to your inbox, click it to verify your email"}),202
+    else:
+        new_user = User(email=user_email, user_name=name_user)
+
+        if photo:
+            profile = save_profile_picture(photo, app.config["UPLOAD_FOLDER"])
+            if profile is None:
+                return jsonify({"message": "Something happened"}), 500
+            new_user.profile_image = profile
+
         new_user.set_password(password)
+
         try:
             db.session.add(new_user)
             db.session.commit()
             token = create_access_token(identity=new_user.id)
             subject= "Please verify your email"
-            body = f"Please click on this link to verify your email.\n\t{host_url}verify-email?token={token}"
+            body = f"Please click on this link to verify your email.\n\t{request.host_url}verify-email?token={token}"
             check = send_emails(new_user.email,subject,body)
             if check == None:
-                return jsonify({"Message":"Something happened when trying to send email"}),500
+                return jsonify({"message":"Something happened when trying to send email"}),500
             else:
-                return jsonify({"Message":"User created successfully,please verify your email"}),201
+                return jsonify({"message":"User created successfully,please verify your email", "credentials":new_user.to_dic()}),201
         except Exception as e:
-            return jsonify({"Message":str(e)}),400    
+            return jsonify({"message":str(e)}),400    
+
+        except Exception as e:
+            return jsonify({"message": str(e)}), 400
+
+
 
 
 
@@ -186,33 +236,50 @@ def display_users():
 
 
 
-@app.route("/login",methods=["POST"])
+
+
+@app.route("/login", methods=["POST"])
 def log_user():
     user_email = request.json.get("email")
     user_password = request.json.get("password")
+
     if not user_email or not user_password:
-        return jsonify({"message":"Email and password required"}),400
+        return jsonify({"message": "Email and password required"}), 400
+
+    user_email = user_email.lower()
     user_login = User.query.filter_by(email=user_email).first()
-    
-    if user_login and user_login.check_password(user_password):
+
+    if not user_login:
+        return jsonify({"message": "User not found "}), 401
+
+    # Debugging line
+  
+
+    if user_login.check_password(user_password):
         if user_login.is_verified:
             access_token = create_access_token(identity=user_login.id)
             refresh_token = create_refresh_token(identity=user_login.id)
-            response = jsonify({"message":"User login successfully"})
-            set_access_cookies(response,access_token)
-            set_refresh_cookies(response,refresh_token)
-            return response
+            return jsonify({
+                "message": "User login successfully",
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "credentials":user_login.to_dic(),
+            })
         else:
             token = create_access_token(identity=user_login.id)
             subject = "Verify your email"
-            body = f"Please click on this link to verify your email.\n\n{request.host_url}verify-email?token={token}"
-            status = send_emails(user_login.email,subject,body)
+            body = f"Please click this link to verify your email:\n\n{request.host_url}verify-email?token={token}"
+            status = send_emails(user_login.email, subject, body)
+
             if status == 202:
-                return jsonify({"message":"A link has been sent into your inbox, kindly click on it and verify your email"})
+                return jsonify({"message": "A link has been sent to your inbox, kindly verify your email"})
             else:
-                return jsonify({"message":"Something happened, couldn't send the email"})
+                return jsonify({"message": "Something went wrong, couldn't send the email"})
     else:
-        return jsonify({"Message":"invalid email and password"}),401  
+        return jsonify({"message": "Invalid email or password"}), 401
+
+
+
 
 @app.route("/logout",methods = ["POST"])
 @jwt_required()
@@ -224,6 +291,10 @@ def log_out():
     response = jsonify({"Message":"User logged out successfully"}),200
     unset_jwt_cookies(response)
     return response
+
+
+
+
 
 @app.route("/verify-email",methods=["GET"])
 def verify_new():
@@ -247,6 +318,10 @@ def verify_new():
     except Exception as e:
         return jsonify({"Message":str(e)}),400  
 
+
+
+
+
 @app.route("/resend-verification",methods=["POST"])
 @jwt_required()
 def new_verification():
@@ -264,7 +339,7 @@ def new_verification():
         if status == 202:
             return jsonify({"Message":"verification resend again"}),200
         else:
-            return jsonofy({"Message":"Something happened")
+            return jsonofy({"Message":"Something happened"})
 
 @app.route("/forgot-password",methods = ["POST"])
 def forgot_password():
@@ -285,7 +360,13 @@ def forgot_password():
         status = send_emails(check_user.email,subject,body)
         if status != 202:
             return jsonify({"message":"Couldn't send email"})
-    	return jsonify({"message":"if an account with that email exist, we've sent a reset link"})
+        return jsonify({"message":"if an account with that email exist, we've sent a reset link"})
+
+
+
+
+
+
 
 @app.route("/reset-password",methods = ["POST"])
 def new_password():
@@ -315,6 +396,12 @@ def new_password():
     verify.user.set_password(new_password)
     db.session.commit()
     return jsonify({"Message":"Password reset successfully"}),200
+
+
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOADS'], filename)
+
 
 if __name__=="__main__":
     with app.app_context():
