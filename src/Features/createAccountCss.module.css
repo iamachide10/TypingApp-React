@@ -1,28 +1,91 @@
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-
-.container{
-
+body {
+    font-family: 'Roboto', sans-serif; /* Professional font */
+    background-color: #f4f7fa; /* Light neutral background */
+    color: #333; /* Dark text for readability */
+    line-height: 1.6;
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    max-width: 500px;
-    margin: 0 auto;
-    min-height:50vh;
-    background-color: #f3f3f3;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
     padding: 20px;
 }
 
-.inputGroup{
-    display: flex;
-    flex-direction: column;
-    gap: 6px
+.container {
+    background: #722e2e; /* White background for content */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 30px;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
 }
 
+h1 {
+    font-size: 2.5em;
+    color: #2c3e50; /* Dark blue heading */
+    margin-bottom: 10px;
+}
 
+p {
+    font-size: 1.1em;
+    color: #7f8c8d; /* Grayish text for description */
+    margin-bottom: 20px;
+}
 
+.btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
 
-.inputGroup input{
-   padding: 8px;
-   border-radius: 5px;
-   border: 1px solid #ccc;
+button {
+    padding: 10px 20px;
+    font-size: 1em;
+    font-weight: 500;
+    color: #ffffff;
+    background-color: #3498db; /* Blue buttons */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9; /* Darker blue on hover */
+}
+
+#logout {
+    background-color: #e74c3c; /* Red for logout */
+}
+
+#logout:hover {
+    background-color: #c0392b; /* Darker red on hover */
+}
+
+.welcome {
+    font-size: 1em;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+    }
+    .btn-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    button {
+        width: 100%;
+    }
 }

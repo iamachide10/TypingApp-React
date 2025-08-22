@@ -7,38 +7,57 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit =async  (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const credentials={
-      email,
-      password
-    }
-
-     const url="http://127.0.0.1:5000/login"
-     const options={
-      method: "POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify(credentials)
-     }
-
-     try{
-      const response = await fetch(url, options)
-      const data = await response.json();
-
-        const message = data.message;
-        alert(message);
-        const credentials = data.credentials;
-
-        localStorage.setItem("user", JSON.stringify(credentials));
-        window.location.href = "/"; // Redirect to the landing page after successful login
-      
-     }catch(error){
-      alert(error)
-     }
+  const credentials = {
+    email,
+    password,
   };
+
+  const url = "http://127.0.0.1:5000/login";
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(credentials),
+  };
+
+  try {
+    const response = await fetch(url, options);
+    const data = await response.json();
+
+    const message = data.message;
+    alert(message);
+
+    if (response.ok) {
+      const userData = data.credentials; // contains {id, email, token, ...}
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // 🔹 Fetch general settings after login
+      const settingsRes = await fetch(
+        `http://127.0.0.1:5000/general-settings/${userData.user_id}`
+      );
+      const settingsData = await settingsRes.json();
+
+      if (settingsRes.ok) {
+        localStorage.setItem(
+          "generalSettings",
+          JSON.stringify(settingsData)
+        );
+      } else {
+        console.warn("No general settings found:", settingsData);
+      }
+
+      // 🔹 Redirect after everything is saved
+      window.location.href = "/";
+    }
+  } catch (error) {
+    alert(error);
+  }
+};
+
 
   return (
     <div className="login-container">
