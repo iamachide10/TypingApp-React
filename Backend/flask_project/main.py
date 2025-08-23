@@ -118,7 +118,7 @@ def save_profile_picture(file,upload_folder,preferred_format="JPEG"):
        img.verify()
 
        file.seek(0)
-       img = Image.open(file).convert("RGB")
+       image = img.convert("RGB")
 
        filename = f"{uuid.uuid4().hex}.{preferred_format.lower()}"
        os.makedirs(app.config["UPLOAD_FOLDER"],exist_ok=True)
