@@ -8,10 +8,12 @@ import Settings from "./settingsComponents/Settings";
 import CreateAccount from "./Features/CreateAccount";
 import Login from "./Features/login";
 import RequestReset from "./Features/RequestReset";
+import VerifyEmail from "./Features/verifyEmail";
 import ResetPassaword from "./Features/ResetPassword";
 function App() {
   return (
       <Routes>
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/" element ={<LandingPage/>} />
         <Route path="/request-reset" element ={<RequestReset/>} />
         <Route path="/reset-password" element ={<ResetPassaword/>} />

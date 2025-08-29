@@ -7,13 +7,14 @@ class User(db.Model):
     id = db.Column(db.Integer,primary_key = True) 
     user_name = db.Column(db.String(100),nullable = False) 
     email = db.Column(db.String(120),unique = True,nullable = False)
-    is_verified = db.Column(db.Boolean,default = True) 
+    is_verified = db.Column(db.Boolean,default = False) 
     password = db.Column(db.String(150),nullable = False)
     profile_image = db.Column(db.String(300))
     general_settings = db.relationship("GeneralSettings",backref ="user",uselist = False,lazy=True)
     theme_settings = db.relationship("ThemeSettings",backref = "user",uselist = False,lazy=True)
     passage_settings = db.relationship("CustomPassageSettings",backref="user",uselist = False,lazy=True) 
     reset_tokens = db.relationship("ResetToken",backref="user", lazy = True)
+    last_verification_sent=db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
          self.password = generate_password_hash(password)
@@ -28,8 +29,8 @@ class User(db.Model):
             "userName":self.user_name,
             "profile_image":self.profile_image,
             "email":self.email,
-            "Verified":self.is_verified
-            
+            "Verified":self.is_verified,
+            "last_verification_sent":self.last_verification_sent    
         }
 
 

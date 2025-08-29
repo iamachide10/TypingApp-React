@@ -8,10 +8,11 @@ import uuid
 from flask_jwt_extended import JWTManager,create_access_token,create_refresh_token,set_access_cookies,set_refresh_cookies,jwt_required,get_jwt_identity,unset_jwt_cookies,decode_token
 from datetime import timedelta
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail,Email,To,Content
+from sendgrid.helpers.mail import Mail,Email,To,Content, TrackingSettings, ClickTracking
 from PIL import Image
 import secrets
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
 
 app = Flask(__name__)
 CORS(app)
@@ -35,18 +36,31 @@ def save_profile_picture(file,upload_folder,preferred_format='JPEG'):
         print(f'error saving profile_pic:{e}')
         return None
 
-def send_emails(recipient,subject,body):
+def send_emails(recipient, subject, body):
     sg = SendGridAPIClient(api_key=app.config["SENDGRID_API_KEY"])
-    from_email = Email(app.config["FROM_EMAIL"],app.config["FROM_NAME"])
-    to_email = To(recipient)
-    content = Content("text/plain",body)
-    mail = Mail(from_email,to_email,subject,content)
+    from_email = Email(app.config["FROM_EMAIL"], app.config["FROM_NAME"])
+    print(f"DEBUG subject: {subject} ({type(subject)})")
+
+    
+    mail = Mail(
+        from_email=from_email,
+        to_emails=recipient,
+        subject=subject
+    )
+    mail.add_content(Content("text/plain", body))  # ✅ Properly add plain text
+
+    # Disable click tracking properly
+    tracking_settings = TrackingSettings()
+    tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
+    mail.tracking_settings = tracking_settings
     try:
-       response = sg.send(mail)
-       return response.status_code
+        response = sg.send(mail)
+        return response.status_code
     except Exception as e:
-       print(f"Error sending email:{e}")
-       return None 
+        print(f"Error sending email: {e}")
+        return None
+
+
 
 @app.route("/refresh-token",methods = ["POST"])
 @jwt_required()
@@ -186,10 +200,10 @@ def register():
             return jsonify({"message": "User already exists"}), 202
 
     elif existing_user and not existing_user.is_verified:
-            token = create_access_token(identity=existing_user.id)
+            token = create_access_token(identity=str(existing_user.id))
             subject = "Please verify your email"
-            body = f"Please click on this link to verify your email.\n\t{request.host_url}verify-email?token={token}"
-            status = send_emails(existing_user.email,subject,body)
+            body = f"Please click this link to verify your email:\n\nhttp://localhost:5000/verify-email?token={token}"
+            status = send_emails(recipient=existing_user.email,subject=subject,body=body)
             if status == None:
                 return jsonify({"message":"Something happened"}),500
             else:
@@ -210,7 +224,7 @@ def register():
             db.session.commit()
             token = create_access_token(identity=new_user.id)
             subject= "Please verify your email"
-            body = f"Please click on this link to verify your email.\n\t{request.host_url}verify-email?token={token}"
+            body = f"Please click this link to verify yoursssss email:\n\nhttp://localhost:5000/verify-email?token={token}"
             check = send_emails(new_user.email,subject,body)
             if check == None:
                 return jsonify({"message":"Something happened when trying to send email"}),500
@@ -221,6 +235,8 @@ def register():
 
         except Exception as e:
             return jsonify({"message": str(e)}), 400
+
+
 
 
 
@@ -238,6 +254,7 @@ def display_users():
 
 
 
+
 @app.route("/login", methods=["POST"])
 def log_user():
     user_email = request.json.get("email")
@@ -250,34 +267,45 @@ def log_user():
     user_login = User.query.filter_by(email=user_email).first()
 
     if not user_login:
-        return jsonify({"message": "User not found "}), 401
+        return jsonify({"message": "User not found"}), 401
 
-    # Debugging line
-  
-
-    if user_login.check_password(user_password):
-        if user_login.is_verified:
-            access_token = create_access_token(identity=user_login.id)
-            refresh_token = create_refresh_token(identity=user_login.id)
-            return jsonify({
-                "message": "User login successfully",
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "credentials":user_login.to_dic(),
-            })
-        else:
-            token = create_access_token(identity=user_login.id)
-            subject = "Verify your email"
-            body = f"Please click this link to verify your email:\n\n{request.host_url}verify-email?token={token}"
-            status = send_emails(user_login.email, subject, body)
-
-            if status == 202:
-                return jsonify({"message": "A link has been sent to your inbox, kindly verify your email"})
-            else:
-                return jsonify({"message": "Something went wrong, couldn't send the email"})
-    else:
+    # ✅ Check password
+    if not user_login.check_password(user_password):
         return jsonify({"message": "Invalid email or password"}), 401
 
+    # ✅ If verified → issue tokens
+    if user_login.is_verified:
+        access_token = create_access_token(identity=user_login.id)
+        refresh_token = create_refresh_token(identity=user_login.id)
+        return jsonify({
+            "message": "User login successful",
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "credentials": user_login.to_dic(),
+        }), 200
+
+    # 🚫 If not verified → re-send verification link (avoid spamming)
+    now = datetime.now(timezone.utc)
+
+    if (not user_login.last_verification_sent) or  ((now - user_login.last_verification_sent).total_seconds() > 300):  
+        token = create_access_token(
+            identity=user_login.id,
+            expires_delta=timedelta(hours=1)   # ⏳ 1 hour expiry for verification link
+        )
+        subject = "Verify your email"
+        body = f"Please click this link to verify your email:\n\n{request.host_url}verify-email?token={token}"
+        status = send_emails(user_login.email, subject, body)
+
+        if status == 202:
+            # store the time when the last verification email was sent
+            user_login.last_verification_sent = now
+            db.session.commit()
+
+            return jsonify({"message": "Verification email sent. Please check your inbox."}), 403
+        else:
+            return jsonify({"message": "Something went wrong, couldn't send the verification email"}), 500
+    else:
+        return jsonify({"message": "Verification email already sent recently. Please check your inbox."}), 403
 
 
 
@@ -303,7 +331,8 @@ def verify_new():
         return jsonify({"Message":"Verification token is missing"}),404
     try:
         decoded = decode_token(token)
-        user_id = decoded["sub"]
+        user_id = int(decoded["sub"])
+
         
         new_user = User.query.get(user_id)
         if not new_user:
