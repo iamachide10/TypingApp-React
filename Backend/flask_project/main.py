@@ -214,24 +214,7 @@ def register():
         return jsonify({"message": "User already exists"}), 202
 
     elif existing_user and not existing_user.is_verified:
-        try:
-            token = secrets.token_urlsafe(32)
-            hash_token = set_password(token)
-            expiration_time = datetime.utcnow() + timedelta(minutes=15)
-            reset_token = ResetToken(user_id=existing_user.id,token=hash_token,expires_at=expiration_time) 
-            db.session.add(reset_token)
-            db.session.commit()
-            subject = "Please verify your email"
-            body = f"Click on this link to resend verification link.\n\n{request.host_url}resend-verific ation?token={token}"
-            status = send_emails(existing_user.email,subject,body)
-            if status == None:
-                return jsonify({"message":"Something happened"}),500
-            else:
-                return jsonify({"message":"A link has been sent to your inbox, click on it to resend the verification link"}),202
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Error: {e}")
-            return jsonify({"message":"Something happened"}) 
+        return jsonify({"message":"please click on resend verification below to resend verification email"}) 
     else:
         new_user = User(email=user_email, user_name=name_user)
 
