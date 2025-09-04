@@ -14,6 +14,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 
+
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)
@@ -47,9 +48,9 @@ def send_emails(recipient, subject, body):
         to_emails=recipient,
         subject=subject
     )
-    mail.add_content(Content("text/plain", body))  # ✅ Properly add plain text
+    mail.add_content(Content("text/plain", body))  
 
-    # Disable click tracking properly
+    
     tracking_settings = TrackingSettings()
     tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
     mail.tracking_settings = tracking_settings
@@ -103,6 +104,8 @@ def general_settings(user_id):
     print(general.to_dic())  
     db.session.commit()
     return jsonify({"message":"General settings updated successfully", "settings":general.to_dic()}),200
+
+
 
 
 @app.route("/general-settings/<int:user_id>", methods=["GET"])
@@ -201,7 +204,7 @@ def register():
 
     elif existing_user and not existing_user.is_verified:
             token = create_access_token(identity=str(existing_user.id))
-            subject = "Please verify your email"
+            subject = " "
             body = f"Please click this link to verify your email:\n\nhttp://localhost:5000/verify-email?token={token}"
             status = send_emails(recipient=existing_user.email,subject=subject,body=body)
             if status == None:
@@ -249,10 +252,6 @@ def display_users():
         return jsonify({"Message":"Couldn't get users"}),400
     pupils_json = [pupil.to_dic() for pupil in pupils] 
     return jsonify({"users":pupils_json})
-
-
-
-
 
 
 @app.route("/login", methods=["POST"])
