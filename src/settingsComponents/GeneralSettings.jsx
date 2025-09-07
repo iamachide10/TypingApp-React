@@ -10,8 +10,8 @@ const GeneralSettings = () => {
   const [sound, setSound] = useState(true);
 
   // 🔹 Load user from localStorage
-useEffect(() => {
   const userData = localStorage.getItem("user");
+useEffect(() => {
   if (userData) {
     const parsed = JSON.parse(userData);
     setUser(parsed);
@@ -41,40 +41,45 @@ useEffect(() => {
   const userId = user ? user.user_id : null;
 
   const handleSave = async () => {
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/general-settings/${userId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            generalSettings: {
-              duration,
-              difficulty,
-              auto_stat_text: autoStart,
-              enable_sound_effect: sound,
-              test_mode,
+    if(userData){
+
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:5000/general-settings/${userId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-          }),
-        }
-      );
-
-      const result = await response.json();
-      if (response.ok) {
-        alert(result.message);
-
-        // update localStorage too
-        localStorage.setItem(
-          "generalSettings",
-          JSON.stringify(result.settings)
+            body: JSON.stringify({
+              generalSettings: {
+                duration,
+                difficulty,
+                auto_stat_text: autoStart,
+                enable_sound_effect: sound,
+                test_mode,
+              },
+            }),
+          }
         );
-      } else {
-        alert("Error: " + result.Message);
+  
+        const result = await response.json();
+        alert(result.message)
+        if (response.ok) {
+          // update localStorage too
+          localStorage.setItem(
+            "generalSettings",
+            JSON.stringify(result.settings)
+          );
+        } else {
+          alert("Error: " + result.Message);
+        }
+      } catch (error) {
+        console.error("Request failed: " + error);
       }
-    } catch (error) {
-      console.error("Request failed:", error);
+    }
+    else{
+      alert("Please Log in")
     }
   };
 

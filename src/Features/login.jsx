@@ -32,23 +32,37 @@ function Login() {
     alert(message);
 
     if (response.ok) {
-      const userData = data.credentials; // contains {id, email, token, ...}
+      const userData = data.credentials;
       localStorage.setItem("user", JSON.stringify(userData));
+   
 
-      // 🔹 Fetch general settings after login
-      const settingsRes = await fetch(
-        `http://127.0.0.1:5000/general-settings/${userData.user_id}`
-      );
-      const settingsData = await settingsRes.json();
 
-      if (settingsRes.ok) {
-        localStorage.setItem(
-          "generalSettings",
-          JSON.stringify(settingsData)
-        );
+      const generalSettingsRes = await fetch(`http://127.0.0.1:5000/general-settings/${userData.user_id}`);
+      const generalSettingsData = await generalSettingsRes.json();
+      if (generalSettingsRes.ok) {
+        localStorage.setItem("generalSettings",JSON.stringify(generalSettingsData ));
       } else {
-        console.warn("No general settings found:", settingsData);
+        console.warn("No general settings found:", generalSettingsData);
       }
+
+
+      const themeSettingsRes = await fetch(`http://127.0.0.1:5000/theme-settings/${userData.user_id}`)
+      const themeSettingsData =await themeSettingsRes.json()
+      if(generalSettingsData.ok){
+        localStorage.setItem("themeSettings" , JSON.stringify(themeSettingsData))
+      }else{
+        console.log(themeSettingsData)
+      }
+
+      
+      const accountSettingsRes = await fetch(`http://127.0.0.1:5000/account-settings/${userData.user_id}`)
+      const accountSettingsData =await accountSettingsRes.json()
+      if(accountSettingsData.ok){
+        localStorage.setItem("accountSettings" , JSON.stringify(accountSettingsData))
+      }else{
+        console.log(accountSettingsData)
+      }
+
 
       // 🔹 Redirect after everything is saved
       window.location.href = "/";

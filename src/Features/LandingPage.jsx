@@ -11,6 +11,7 @@ function LandingPage() {
 
   const handleLogout = () => {
    localStorage.removeItem("user");
+   localStorage.removeItem("generalSettings")
     setUser(null);
     navigate("/login");
   }
@@ -56,7 +57,7 @@ function LandingPage() {
               <p>Welcome, {user.userName}</p>
               {user.profile_image && (
                 <img
-                  src={`http://localhost:5000/uploads/${user.profile_image}`}
+                  src={`${user.profile_image}`}
                   alt="Profile"
                   width="60"
                   style={{ borderRadius: "50%", marginTop: "10px"  ,  height: "60px", width: "60px"  }}

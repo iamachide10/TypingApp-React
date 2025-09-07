@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import styles from  "./createAccountCss.module.css"
+import { useNavigate } from "react-router-dom";
 
 
 function CreateAccount(){
@@ -10,6 +11,7 @@ function CreateAccount(){
     const [confirmPassword,setconfirmPassword]=useState("")
     const [profilePic ,setProfilePic]=useState(null)
 
+    const  navigate =   useNavigate();
     const handleSubmit = async(e)=>{
       e.preventDefault()
 
@@ -31,13 +33,15 @@ function CreateAccount(){
             method: "POST",
             body:dataContainer
         }
-                      const response=await  fetch(url,options)
-          const data=await response.json()
+        const response=await  fetch(url,options)
+        const data=await response.json()
         const m= data.message
         alert(m)
       }catch(error){
         alert(error)
       } 
+    
+    //  navigate("/login");
     }
 
     const handleImageChange =(e)=>{
@@ -49,8 +53,8 @@ function CreateAccount(){
     }
 
     return(
-        <div className="login-container">
-            <h2 className={styles.main}>Create Account </h2>
+        <div className={styles.login_container}>
+            <h2 >Create Account </h2>
             <form onSubmit={handleSubmit}>
                 <div className={styles.imageSection}>
                     {preview && <img src={preview} alt="Preview" className={styles.preview} />}

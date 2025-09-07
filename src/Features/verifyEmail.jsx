@@ -18,9 +18,9 @@ export default function VerifyEmail() {
         setLoading(false);
       }
     };
-
     verifyUser();
   }, [token]);
+
 
   return (
     <div className="verify-container">

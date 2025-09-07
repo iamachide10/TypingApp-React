@@ -1,29 +1,78 @@
-import { useState } from "react"
+import { useState ,useEffect} from "react"
 import styles from "./ThemeSettings.module.css"
-/*
-theme
-accent red blue green
-font sytel mono space,sans-serif,serif
-text soze small , medium , large
-save theme button
- */
+
 
 const ThemeSettings=()=>{
     const [theme,setTheme]=useState("light")
     const [accentColor,setAccentColor]=useState("red")
     const [textSize,setTextSize]=useState("medium")
     const [font,setFont]=useState("sans-serif")
+    const [userId,setUserId] = useState(null)
 
-    const handleSave=()=>{
-        const settings ={
-            theme,
-            accentColor,
-            textSize,
-            font
+
+    const userData = JSON.parse(localStorage.getItem("user"));
+
+    useEffect(()=>{
+        if(userData){  
+            setUserId(userData.user_id)
+            const themeSettingsData= localStorage.getItem("themeSettings")
+            if(themeSettingsData){
+                const themeSettings = JSON.parse(themeSettingsData)
+                setTheme(themeSettings.theme || "light")
+                setAccentColor(themeSettings.accentColor || "red")
+                setTextSize(themeSettings.textSize || "medium")
+                setFont(themeSettings.font || "sans-serif")
+            } 
         }
-        console.log("These theme settings were saved",settings ); 
-        alert("Settings save successfully.")
+    }, [])
+
+
+    
+
+ 
+    const handleSave= async()=>{
+        if(userId){
+            try{
+             const url =`http://127.0.0.1:5000/theme-settings/${userId}`
+             const options ={
+                method: "POST",
+                headers: {
+                "Content-Type":"application/json",
+                body: JSON.stringify({
+                generalSettings: {
+                theme,
+                accentColor,
+                textSize,
+                font
+                },
+              }),
+              },
+            }
+    
+          const response = await fetch (url, options)
+            
+          const result = await response.json();
+          if(response.ok){
+    
+            localStorage.setItem(
+              "themeSettings",
+              JSON.stringify(result.settings)
+            );
+            
+          }else {
+            alert("Error: " + result.Message);
+          }
+            }catch(e){
+                console.log("Erro: " + {e})
+            }
+        }
+        else{
+            alert("Log in or sign up first.")
+        }
     }
+
+
+
 
     return(
     <div className={styles.themeContainer}>
@@ -56,7 +105,7 @@ const ThemeSettings=()=>{
 
          <div className={styles.settingGroup}>
             <label >Font Style:</label>
-            <select onChange={(e)=>setTextSize(e.target.value)}>
+            <select onChange={(e)=>setFont(e.target.value)}>
                 <option value="monospace">Monospace</option>
                 <option value="sans-serif">Sans-serif</option>
                 <option value="Serif">Serif</option>

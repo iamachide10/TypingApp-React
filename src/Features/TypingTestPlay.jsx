@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react"
+import { useState,useEffect, use } from "react"
 import TypingBox from "./TypingBox";
 import TypingInput from "./TypingInput";
 import { useLocation ,useNavigate} from "react-router-dom"
@@ -77,6 +77,47 @@ const TypingTestPlay = () =>{
         },[textTyped,passage])
 
 
+        const user= localStorage.getItem("user")
+
+
+        useEffect(()=>{ 
+            const saveResult = async()=>{
+            if(isFinished && user){
+                const userData = JSON.parse(user)
+                const userId = userData.user_id
+                const wpm = getWPM()
+                const accuracy = getAccuracy()  
+                console.log(wpm,accuracy)
+                const url=  `http://127.0.0.1:5000/history/${userId}`
+                const options ={
+                    method: "POST",
+                    headers: {
+                    "Content-Type":"application/json",
+                    },
+                    body: JSON.stringify({
+                    wpm,
+                    accuracy,   
+                    score: Math.round(wpm * (accuracy)),
+                    }),    
+                }
+                const response = await fetch (url, options)
+                const result = await response.json();
+                if(response.ok){
+                    console.log("Result saved:", result);
+                }
+                else {
+                    alert("Error: " + result.message);
+                }   
+
+            }
+            console.log(getWPM())
+        }
+        saveResult()
+    },)
+
+
+
+
         const getWPM =()=>{
             const now =Date.now()
             const totalPaused=isPaused && pausedStartTime ? pauseDuration +(now - pausedStartTime):pauseDuration
@@ -109,12 +150,11 @@ const handleRestart = () => {
   setIsPaused(false);
 };
 
+
+
         
     return (<>
-
     <div className="typing-play-container">
-
-
     {!isFinished ? (
         <div>
         <TypingBox text={passage} userInput={textTyped} />
