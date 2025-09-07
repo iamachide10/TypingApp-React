@@ -1,0 +1,30 @@
+2025-09-04 14:26:58,474 - ERROR - main - Error: name 'set_password' is not defined
+2025-09-04 14:28:52,133 - ERROR - main - Error: name 'set_password' is not defined
+2025-09-04 14:37:08,575 - ERROR - main - Error: name 'set_password' is not defined
+2025-09-04 14:40:51,483 - ERROR - main - Error: name 'set_password' is not defined
+2025-09-04 14:45:18,756 - ERROR - main - Error: name 'set_password' is not defined
+2025-09-04 14:52:57,731 - ERROR - main - Error: name 'set_password' is not defined
+2025-09-04 14:53:48,514 - ERROR - main - Error: name 'set_password' is not defined
+2025-09-04 14:57:48,202 - ERROR - main - Error: name 'set_password' is not defined
+2025-09-04 15:07:46,385 - ERROR - main - Error: 'expired_at' is an invalid keyword argument for ResetToken
+2025-09-04 15:09:36,159 - ERROR - main - Error: 'NoneType' object has no attribute 'password' and no __dict__ for setting new attributes
+2025-09-04 15:12:09,730 - ERROR - main - Error: 'NoneType' object has no attribute 'password' and no __dict__ for setting new attributes
+2025-09-04 15:16:34,600 - ERROR - main - Error: 'NoneType' object has no attribute 'password' and no __dict__ for setting new attributes
+2025-09-04 15:21:09,285 - ERROR - main - Error: (sqlite3.IntegrityError) NOT NULL constraint failed: reset_token.user_id
+[SQL: INSERT INTO reset_token (user_id, token, expires_at, used) VALUES (?, ?, ?, ?)]
+[parameters: (None, 'scrypt:32768:8:1$s8IHgvgM2280FlaN$1e62819bf2c42bf551d6cee53bf50c06a8421c684df2f6da8c286187b354548d4efed3e33ab11aca921c4469a0547680b8e17b0018be71160d07cb61f9843e2a', '2025-09-04 15:36:08.805065', 0)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+
+2025-09-07 18:43:58,551 - ERROR - main - Error saving history for 1:  (sqlite3.IntegrityError) NOT NULL constraint failed: history.stopped_time
+[SQL: INSERT INTO history (user_id, wpm, accuracy, score) VALUES (?, ?, ?, ?)]
+[parameters: (1, 41.0, 100.0, 4100.0)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-09-07 18:46:37,378 - ERROR - main - Error saving history for 1:  (sqlite3.IntegrityError) NOT NULL constraint failed: history.stopped_time
+[SQL: INSERT INTO history (user_id, wpm, accuracy, score) VALUES (?, ?, ?, ?)]
+[parameters: (1, 32.0, 100.0, 3200.0)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-09-07 18:47:59,858 - ERROR - main - Error saving history for 1:  (sqlite3.IntegrityError) NOT NULL constraint failed: history.stopped_time
+[SQL: INSERT INTO history (user_id, wpm, accuracy, score) VALUES (?, ?, ?, ?)]
+[parameters: (1, 85.0, 100.0, 8500.0)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
