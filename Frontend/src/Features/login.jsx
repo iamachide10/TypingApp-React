@@ -14,8 +14,8 @@ function Login() {
     email,
     password,
   };
-
-  const url = "http://127.0.0.1:5000/login";
+   const API_URL = process.env.REACT_APP_API_URL;
+   const url=  `${API_URL}/login`
   const options = {
     method: "POST",
     headers: {
