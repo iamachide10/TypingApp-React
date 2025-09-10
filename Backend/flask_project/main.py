@@ -15,6 +15,11 @@ from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
 
+
+
+
+
+
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 app.config.from_object(Config)
@@ -50,25 +55,6 @@ def save_profile_picture(file,upload_folder,preferred_format='JPEG'):
         print(f'error saving profile_pic:{e}')
         return None
 
-def send_emails(recipient,subject,body):
-    sg = SendGridAPIClient(api_key=app.config["SENDGRID_API_KEY"])
-    from_email = Email(app.config["FROM_EMAIL"],app.config["FROM_NAME"])
-    to_email = To(recipient)
-    content = Content("text/plain",body)
-    mail = Mail(from_email,to_email,subject,content)
-    try:
-        img =Image.open(file)
-        img.verify()
-        file.seek(0)
-        image=Image.open(file).convert('RGB')
-        filename=f'{uuid.uuid4().hex}.{preferred_format.lower()}'
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        save_path = os.path.join(upload_folder,filename)
-        image.save(save_path)
-        return filename
-    except Exception as e:
-        print(f'error saving profile_pic:{e}')
-        return None
 
 
 def send_emails(recipient, subject, body):
@@ -129,10 +115,10 @@ def refresh_access_token():
 
 
 
-@app.route("/general-settings/<int:user_id>",methods=["POST"])
-#@jwt_required() 
+@app.route("/general-settings",methods=["POST"])
+@jwt_required() 
 def general_settings(user_id):
-    #user_id = get_jwt_identity()
+    user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message":"User not found"})
@@ -156,24 +142,10 @@ def general_settings(user_id):
     return jsonify({"message":"General settings updated successfully", "settings":general.to_dic()}),200
 
 
-# @app.route("/general-settings", methods=["GET"])
-# @jwt_required()
-# def get_general_settings():
-#     user_id = get_jwt_identity()
-#     user = User.query.get(user_id)
-#     if not user:
-#         return jsonify({"Message": "User not found"}), 404
-#     if not user.general_settings:
-#         return jsonify({"Message": "No general settings found"}), 404
-#     return jsonify(user.general_settings.to_dic()), 200
-
-
-
-
-@app.route("/general-settings/<int:user_id>", methods=["GET"])
-# @jwt_required()
-def get_general_settings(user_id):
-    # user_id = get_jwt_identity()
+@app.route("/general-settings", methods=["GET"])
+@jwt_required()
+def get_general_settings():
+    user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message": "User not found"}), 404
@@ -182,10 +154,24 @@ def get_general_settings(user_id):
     return jsonify(user.general_settings.to_dic()), 200
 
 
-@app.route("/custom-passage-settings/<int:user_id>",methods=["POST"])
-#@jwt_required()
+
+
+# @app.route("/general-settings/<int:user_id>", methods=["GET"])
+# # @jwt_required()
+# def get_general_settings(user_id):
+#     # user_id = get_jwt_identity()
+#     user = User.query.get(user_id)
+#     if not user:
+#         return jsonify({"Message": "User not found"}), 404
+#     if not user.general_settings:
+#         return jsonify({"Message": "No general settings found"}), 404
+#     return jsonify(user.general_settings.to_dic()), 200
+
+
+@app.route("/custom-passage-settings",methods=["POST"])
+@jwt_required()
 def passage_settings(user_id):
-    #user_id = get_jwt_identity()
+    user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message":"User not found"}),404
@@ -205,10 +191,10 @@ def passage_settings(user_id):
 
 
 
-@app.route("/theme-settings<int:user_id>", methods=["POST"])
-#@jwt_required()
+@app.route("/theme-setting", methods=["POST"])
+@jwt_required()
 def theme_settings(user_id):
-   # verify = get_jwt_identity()
+    verify = get_jwt_identity()
     person = User.query.get(user_id)
     if not person:
         return jsonify({"message": "User not found"}), 404
@@ -278,7 +264,7 @@ def register():
             db.session.add(reset_token)
             db.session.commit()
             subject= "Please verify your email"
-            link = url_for('verify_new',token=token,_external=True)
+            link = f"http://localhost:3000/verify-email/{token}"
             body = f"Please click on this link to verify your email.\n\t{link}"
             print(body)
             check = send_emails(new_user.email,subject,body)
@@ -348,7 +334,8 @@ def log_user():
 
                 # Send verification email
                 subject = "Verify your email"
-                link = url_for("verify_new", token=token, _external=True)
+                link =f"http://localhost:3000/verify-email/{token}"
+
                 body = f"Please click this link to resend verification email.\n\t{link}"
                 status = send_emails(user_login.email, subject, body)
 
@@ -471,14 +458,16 @@ def forgot_password():
             reset_token = secrets.token_urlsafe(32)
             expiry_time = datetime.utcnow() + timedelta(minutes=15)
             reset_entry = ResetToken(user_id=check_user.id,expires_at=expiry_time)
-            hashed_token = set_password(reset_token)
-            reset_entry.token = hashed_token
+            reset_entry.set_password(reset_token)
+          
             db.session.add(reset_entry)
             db.session.commit()
             subject = "Reset your password if you want to"
-            body = f"if you want to reset your password,click on this link.\n\t{request.host_url}reset-password?token={reset_token}"
+            link = f"http://localhost:3000/reset-password/{reset_token}"
+            body = f"if you want to reset your password,click on this link.\n\t{link}"
+
             status = send_emails(check_user.email,subject,body)
-            if status != 202:
+            if status is None:
                 return jsonify({"message":"Couldn't send email"})
             return jsonify({"message":"if an account with that email exist, we've sent a reset link"})
         except Exception as e:
@@ -491,60 +480,66 @@ def forgot_password():
 
 
 
-
-@app.route("/reset-password",methods = ["POST"])
+@app.route("/reset-password", methods=["POST"])
 def new_password():
     token = request.args.get("token")
     if not token:
-        return jsonify({"message":"Invalid request"}),400
-    verify = ResetToken.query.all()
+        return jsonify({"message": "Invalid request"}), 400
+
+    verify = ResetToken.query.filter_by(used=False).all()
     existence = None
     for each in verify:
-        if check_password(token,each.token):
+        if each.check_passwords(token):
             existence = each
             break
+
     if not existence:
-        return jsonify({"message":"Invalid or non-existent token"}),404
+        return jsonify({"message": "Invalid or non-existent token"}), 404
+
     if existence.used:
-        return jsonify({"message":"This token has already been used"}),400
-    if existence.expires_at < datetime.utcnow():
-        return jsonify({"message":"This token has expired"}),400
+        return jsonify({"message": "This token has already been used"}), 400
+
+    # --- FIX: handle naive vs aware datetime safely ---
+    expires_at = existence.expires_at
+    if expires_at.tzinfo is None:  # old value = naive
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    if expires_at < datetime.now(timezone.utc):
+        return jsonify({"message": "This token has expired"}), 400
+
     check = User.query.filter_by(id=existence.user_id).first()
     if not check:
-        return jsonify({"message":"User not found"})
+        return jsonify({"message": "User not found"}), 404
+
     data = request.get_json()
-    new_password = data.get("password",None)
+    new_password = data.get("password", check.password)
+
     if not new_password:
-        return jsonify({"Message":"Must type in new password"}),400
-    if len(new_password) < 8:
-        return jsonify({"Message":"Password must have at least 8 characters"}),400
-    if not any(c.isupper() for c in new_password):
-        return jsonify({"Message":"Must include at least one capital letter"}),400
-    if not any(c.islower() for c in new_password):
-        return jsonify({"Message":"Must have at least a small letter"}),400
-    if not any(c.isdigit() for c in new_password):
-        return jsonify({"Message":"Must have at least a digit"}),400
+        return jsonify({"Message": "Must type in new password"}), 400
+
     try:
-        check.password=set_password(new_password)
-        db.session.delete(existence)
+        print(new_password)
+        check.hash(new_password)
+        db.session.delete(existence)  # remove token after use
         db.session.commit()
-        return jsonify({"Message":"Password reset successfully"}),200
+        return jsonify({"message": "Password reset successfully"}), 200
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error: {e}")
-        return jsonify({"message":"Something went wrong"})
+        return jsonify({"message": "Something went wrong"}), 500
 
 
-@app.route("/history/<int:retrieve_id>",methods=["POST"])
-#@jwt_required()
+@app.route("/history",methods=["POST"])
+@jwt_required()
 def history(retrieve_id):
-    #retrieve_id = get_jwt_identity()
+    retrieve_id = get_jwt_identity()
     if not retrieve_id:
         return jsonify({"message":"Invalid or corrupted token"})
     check = User.query.filter_by(id=retrieve_id).first()
     if not check:
         return jsonify({"message":"User not found"})
     data = request.get_json()
+    print(data)
     words_per_min = data.get("wpm")
     accuracy = data.get("accuracy")
     score = data.get("score")
@@ -683,6 +678,51 @@ def tokens():
         return jsonify({"message":"No tokens found"})
     conversion = [token.to_dict() for token in all_tokens]
     return jsonify({"tokens":conversion})
+
+
+
+@app.route("/updates",methods=["PATCH"])
+@jwt_required()
+def change_name(retrieve_id):
+    retrieve_id = get_jwt_identity()
+    verify = User.query.get(retrieve_id)
+    if not verify:
+        return jsonify({"message":"Invalid or expired token"})
+    updated_fields = []
+    messages = []
+    user_name = request.form.get("name")
+    profile = request.files.get("image")
+    if user_name:
+        verify.user_name = user_name
+        response = "User name is updated successfully"
+        updated_fields.append(verify.user_name)
+        messages.append(response)
+    if profile:
+        old_filename = verify.profile_image
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"],old_filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        status = save_profile_picture(profile,app.config["UPLOAD_FOLDER"])
+        if status is None:
+            return jsonify({"message":"Please upload a real image"})
+        else:
+            verify.profile_image = status
+            updated_fields.append(verify.profile_image)
+            responses = "Profile image updated successfully"
+            messages.append(responses)
+    try:
+        db.session.commit()
+        return jsonify({"messages":messages,"name": verify.user_name if verify.user_name else None, "profilePic":url_for("uploaded_file",filename=verify.profile_image,_external=True) if verify.profile_image else None})
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error: {e}")
+        return jsonify({"message":"Oops, an error occurred"})
+    
+
+@app.route("/history")
+def get_history():
+    histories = History.query.all()
+    return jsonify({"history": [history.to_diction() for history in histories]})
 
 if __name__=="__main__":
     with app.app_context():

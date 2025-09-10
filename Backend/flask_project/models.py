@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy 
 from werkzeug.security import generate_password_hash,check_password_hash
-from datetime import datetime
+from datetime import datetime,timezone
 from flask import url_for
 
 db = SQLAlchemy() 
@@ -20,7 +20,7 @@ class User(db.Model):
 
     
     def hash(self, password):
-         self.password = generate_password_hash(password)
+         self.password =generate_password_hash(password)
     
     def check_password(self, password):
         return check_password_hash(self.password, password)
@@ -89,7 +89,7 @@ class ResetToken(db.Model):
     id = db.Column(db.Integer,primary_key = True)
     user_id = db.Column(db.Integer,db.ForeignKey("user.id"),nullable = False)
     token = db.Column(db.String(300),nullable = False,unique=True)
-    expires_at = db.Column(db.DateTime,nullable = False)
+    expires_at = db.Column(db.DateTime,nullable = False, default=lambda: datetime.now(timezone.utc))
     used = db.Column(db.Boolean,default = False)
 
     def set_password(self, new_token):

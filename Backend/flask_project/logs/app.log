@@ -28,3 +28,4 @@
 [SQL: INSERT INTO history (user_id, wpm, accuracy, score) VALUES (?, ?, ?, ?)]
 [parameters: (1, 85.0, 100.0, 8500.0)]
 (Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-09-08 16:32:23,315 - ERROR - main - Error: name 'pas' is not defined
