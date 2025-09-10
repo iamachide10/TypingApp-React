@@ -268,7 +268,7 @@ def register():
             db.session.add(reset_token)
             db.session.commit()
             subject= "Please verify your email"
-            link = f"http://localhost:3000/verify-email/{token}"
+            link = f"https://typingapp-mastery.onrender.com/verify-email/{token}"
             body = f"Please click on this link to verify your email.\n\t{link}"
             print(body)
             check = send_emails(new_user.email,subject,body)
@@ -338,7 +338,7 @@ def log_user():
 
                 # Send verification email
                 subject = "Verify your email"
-                link =f"http://localhost:3000/verify-email/{token}"
+                link =f"https://typingapp-mastery.onrender.com/verify-email/{token}"
 
                 body = f"Please click this link to resend verification email.\n\t{link}"
                 status = send_emails(user_login.email, subject, body)
@@ -467,7 +467,7 @@ def forgot_password():
             db.session.add(reset_entry)
             db.session.commit()
             subject = "Reset your password if you want to"
-            link = f"http://localhost:3000/reset-password/{reset_token}"
+            link = f"https://typingapp-mastery.onrender.com/reset-password/{reset_token}"
             body = f"if you want to reset your password,click on this link.\n\t{link}"
 
             status = send_emails(check_user.email,subject,body)
