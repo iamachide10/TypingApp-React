@@ -37,7 +37,9 @@ function Login() {
    
 
 
-      const generalSettingsRes = await fetch(`http://127.0.0.1:5000/general-settings/${userData.user_id}`);
+
+      const API_URL = process.env.REACT_APP_API_URL;
+      const generalSettingsRes = await fetch(`${API_URL}/general-settings`);
       const generalSettingsData = await generalSettingsRes.json();
       if (generalSettingsRes.ok) {
         localStorage.setItem("generalSettings",JSON.stringify(generalSettingsData ));

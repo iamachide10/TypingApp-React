@@ -21,7 +21,9 @@ const handlePassageChange=(e)=>{
 const handleSave =async()=>{
     console.log(CustomPassage)
 
-    const url ="http://127.0.0.1:5000/custom-passage-settings"
+    const API_URL = process.env.REACT_APP_API_URL;
+
+    const url = `${API_URL}/custom-passage-settings`;
     const options={
         method:"POSt",
         body:CustomPassage

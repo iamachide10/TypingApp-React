@@ -39,8 +39,9 @@ const AccountSettings =()=>{
       formData.append("image", image);
     }
 
-    const url = `http://127.0.0.1:5000/updates`;
-
+    const API_URL = process.env.REACT_APP_API_URL;
+    const url = `${API_URL}/updates`;
+    
     try {
       const response = await fetch(url, {
         method: "PATCH",

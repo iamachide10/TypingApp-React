@@ -46,8 +46,9 @@ useEffect(() => {
     if(userData){
 
       try {
+        const API_URL = process.env.REACT_APP_API_URL;
         const response = await fetch(
-          `http://127.0.0.1:5000/general-settings`,
+          `${API_URL}/general-settings`,
           {
             method: "POST",
             headers: {

@@ -10,7 +10,9 @@ const RequestReset=()=>{
 
     const handleSubmit=async(e)=>{
         e.preventDefault()
-        const url= `http://localhost:5000/forgot-password`;
+        const API_URL = process.env.REACT_APP_API_URL;
+
+        const url = `${API_URL}/forgot-password`;
         const options={
             method:"POST",
             headers:{

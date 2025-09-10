@@ -13,7 +13,9 @@ export default function ResetPassaword(){
     const handleSubmit =async (e)=>{
         e.preventDefault();
         if(password ==confirmPassword){
-            const url = `http://localhost:5000/reset-password?token=${token}`
+           const API_URL = process.env.REACT_APP_API_URL;
+
+            const url = `${API_URL}/reset-password?token=${token}`;
             const options ={
                 "method":"POST",
                 headers:{

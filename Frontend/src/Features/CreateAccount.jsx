@@ -28,15 +28,19 @@ function CreateAccount(){
         dataContainer.append("profile_image", profilePic)
       }
       try{
-        const url="http://127.0.0.1:5000/sign_in"
-        const options={
-            method: "POST",
-            body:dataContainer
-        }
+        const API_URL = process.env.REACT_APP_API_URL;
+        const url = `${API_URL}/sign_in`;
+
+        const options = {
+        method: "POST",
+        body: dataContainer
+        };
+        
         const response=await  fetch(url,options)
         const data=await response.json()
         const m= data.message
         alert(m)
+         window.location.href = "/login";
       }catch(error){
         alert(error)
       } 

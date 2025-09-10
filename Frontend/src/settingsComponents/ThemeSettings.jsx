@@ -33,7 +33,8 @@ const ThemeSettings=()=>{
     const handleSave= async()=>{
         if(userId){
             try{
-             const url =`http://127.0.0.1:5000/theme-settings`
+            const API_URL = process.env.REACT_APP_API_URL;
+             const url =` ${API_URL}/theme-settings`
              const options ={
                 method: "POST",
                 headers: {
