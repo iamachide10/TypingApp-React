@@ -6,21 +6,24 @@ import './TypingTestPlayCss.css';
 
 
 const TypingTestPlay = () =>{
-    const [accuracy,setAccuracy]=useState(0)
 
     const [startTime,setStartTime] =useState(null)
     const [isFinished,setIsFinished] =useState(false)
     const [timeLeft , setTimeLeft] =useState(null)
+    const [wpm, setWPM]=useState(0)
+    const [accuracy,setAccuracy]=useState(0)
     const [pauseDuration,setPauseDuration]=useState(0)
     const [pausedStartTime,setPausedStartTime] = useState()
     const [textTyped,setTextTyped]=useState("")
     const [isPaused , setIsPaused] = useState(false)
-    
+    const [finalStats,setFinalStats]=useState(null)
     const {state} =useLocation()
-   const navigate = useNavigate();
+    const navigate = useNavigate();
     const {passage, duration , title} = state || {}
 
-    const handleStart =()=>{
+
+
+    const handlePause =()=>{
 
         if(!isPaused){
             setPausedStartTime(Date.now())
@@ -45,6 +48,17 @@ const TypingTestPlay = () =>{
     }, [startTime])
     
 
+    useEffect(() => {
+        if (isFinished) {
+            const finalWPM = getWPM();
+            const finalAccuracy = getAccuracy();
+            setFinalStats({ wpm: finalWPM, accuracy: finalAccuracy }); 
+            setAccuracy(finalAccuracy)
+            setWPM(finalWPM)
+            // keep them frozen}
+    } },[isFinished])
+
+
 
     useEffect(() =>{
         if(!startTime|| isFinished ) return;
@@ -60,8 +74,7 @@ const TypingTestPlay = () =>{
             if(timeLefts <=0 ){
                 clearInterval(interval)
                 setIsFinished(true)
-            }
-          
+            }  
         },1000)
         
         return ()=> clearInterval(interval)
@@ -82,13 +95,12 @@ const TypingTestPlay = () =>{
 
         useEffect(()=>{ 
             const saveResult = async()=>{
-            if(isFinished && user){
+            
+            if(isFinished && user && finalStats){
                 const userData = JSON.parse(user)
                 const userId = userData.user_id
-                const wpm = getWPM()
-                const accuracy = getAccuracy()  
                 console.log(wpm,accuracy)
-                const url=  `http://127.0.0.1:5000/history/${userId}`
+                const url=  `http://127.0.0.1:5000/history`
                 const options ={
                     method: "POST",
                     headers: {
@@ -108,12 +120,10 @@ const TypingTestPlay = () =>{
                 else {
                     alert("Error: " + result.message);
                 }   
-
             }
-            console.log(getWPM())
         }
         saveResult()
-    },)
+    },[finalStats])
 
 
 
@@ -131,8 +141,7 @@ const TypingTestPlay = () =>{
             let correct = 0
             for(let i=0; i <textTyped.length; i++  ) {
                 if(textTyped[i]===passage[i]) {
-                 correct+=1
-                  console.log('True ');   
+                 correct+=1  
                 }
             }
             const totalTyped=textTyped.length
@@ -140,7 +149,6 @@ const TypingTestPlay = () =>{
         }
 
 const handleRestart = () => {
-  setAccuracy(0);
   setStartTime(null);
   setIsFinished(false);
   setTimeLeft(null);
@@ -148,12 +156,14 @@ const handleRestart = () => {
   setPausedStartTime(null);
   setTextTyped("");
   setIsPaused(false);
+  setFinalStats(null)
 };
 
 
 
-        
-    return (<>
+
+
+return (<>
     <div className="typing-play-container">
     {!isFinished ? (
         <div>
@@ -164,9 +174,9 @@ const handleRestart = () => {
     (<div className="test-results">
         <h3>Test Completed</h3>
        <p>
-        WPM: <strong>{getWPM()}</strong>
+        WPM: <strong>{wpm}</strong>
         </p> 
-        <p>Accuracy : <strong>{getAccuracy()}</strong></p>
+        <p>Accuracy : <strong>{accuracy}</strong></p>
         <button onClick={()=>handleRestart()} >Try Again </button>
     </div>
     )}

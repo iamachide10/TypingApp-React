@@ -46,22 +46,22 @@ function Login() {
       }
 
 
-      const themeSettingsRes = await fetch(`http://127.0.0.1:5000/theme-settings/${userData.user_id}`)
-      const themeSettingsData =await themeSettingsRes.json()
-      if(generalSettingsData.ok){
-        localStorage.setItem("themeSettings" , JSON.stringify(themeSettingsData))
-      }else{
-        console.log(themeSettingsData)
-      }
+      // const themeSettingsRes = await fetch(`http://127.0.0.1:5000/theme-settings/${userData.user_id}`)
+      // const themeSettingsData =await themeSettingsRes.json()
+      // if(generalSettingsData.ok){
+      //   localStorage.setItem("themeSettings" , JSON.stringify(themeSettingsData))
+      // }else{
+      //   console.log(themeSettingsData)
+      // }
 
       
-      const accountSettingsRes = await fetch(`http://127.0.0.1:5000/account-settings/${userData.user_id}`)
-      const accountSettingsData =await accountSettingsRes.json()
-      if(accountSettingsData.ok){
-        localStorage.setItem("accountSettings" , JSON.stringify(accountSettingsData))
-      }else{
-        console.log(accountSettingsData)
-      }
+      // const accountSettingsRes = await fetch(`http://127.0.0.1:5000/account-settings/${userData.user_id}`)
+      // const accountSettingsData =await accountSettingsRes.json()
+      // if(accountSettingsData.ok){
+      //   localStorage.setItem("accountSettings" , JSON.stringify(accountSettingsData))
+      // }else{
+      //   console.log(accountSettingsData)
+      // }
 
 
       // 🔹 Redirect after everything is saved

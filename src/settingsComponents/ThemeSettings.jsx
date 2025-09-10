@@ -33,7 +33,7 @@ const ThemeSettings=()=>{
     const handleSave= async()=>{
         if(userId){
             try{
-             const url =`http://127.0.0.1:5000/theme-settings/${userId}`
+             const url =`http://127.0.0.1:5000/theme-settings`
              const options ={
                 method: "POST",
                 headers: {

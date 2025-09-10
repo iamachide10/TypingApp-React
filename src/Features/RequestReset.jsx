@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const RequestReset=()=>{
     const [email,setEmail]=useState("")
     const [message, setMessage]=useState("")
+    const {token} = useParams();
 
 
     const handleSubmit=async(e)=>{
         e.preventDefault()
-        const url= "http://127.0.0.1:5000/request-reset";
+        const url= `http://localhost:5000/forgot-password`;
         const options={
             method:"POST",
             headers:{

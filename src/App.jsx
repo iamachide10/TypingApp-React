@@ -10,10 +10,11 @@ import Login from "./Features/login";
 import RequestReset from "./Features/RequestReset";
 import VerifyEmail from "./Features/verifyEmail";
 import ResetPassaword from "./Features/ResetPassword";
+
 function App() {
   return (
       <Routes>
-        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/" element ={<LandingPage/>} />
         <Route path="/request-reset" element ={<RequestReset/>} />
         <Route path="/reset-password" element ={<ResetPassaword/>} />
@@ -24,6 +25,8 @@ function App() {
         <Route path="/practice/:levelId" element ={<PracticeLevelPage/>} />
         <Route path="/login" element ={<Login/>} />
         <Route path="/create_account" element ={<CreateAccount/>} />
+        <Route path="/reset-password/:token" element ={<ResetPassaword/>} />
+        
       </Routes>
   );
 }

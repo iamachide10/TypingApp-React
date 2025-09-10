@@ -21,7 +21,7 @@ const handlePassageChange=(e)=>{
 const handleSave =async()=>{
     console.log(CustomPassage)
 
-    const url ="http://127.0.0.1:5000/login"
+    const url ="http://127.0.0.1:5000/custom-passage-settings"
     const options={
         method:"POSt",
         body:CustomPassage

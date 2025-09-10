@@ -20,12 +20,14 @@ useEffect(() => {
     const storedSettings = localStorage.getItem("generalSettings");
     if (storedSettings) {
       const data = JSON.parse(storedSettings);
-
+      console.log(data)
       setDuration(data.duration || "15");
       setDifficulty(data.difficulty || "medium");
       setTest_mode(data.test_mode || "words");
       setAutoStart(
-        data.auto_stat_text !== undefined ? data.auto_stat_text : true
+          data.auto_start_text !== undefined
+          ? data.auto_start_text
+          : true
       );
       setSound(
         data.enable_sound_effect !== undefined
@@ -45,7 +47,7 @@ useEffect(() => {
 
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/general-settings/${userId}`,
+          `http://127.0.0.1:5000/general-settings`,
           {
             method: "POST",
             headers: {
