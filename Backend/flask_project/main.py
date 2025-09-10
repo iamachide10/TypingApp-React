@@ -21,7 +21,11 @@ from logging.handlers import RotatingFileHandler
 
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+
+CORS(app, resources={
+    r"/*": {"origins": ["http://localhost:3000", "https://typingapp-mastery.onrender.com"]}
+}, supports_credentials=True)
+
 app.config.from_object(Config)
 app.config["UPLOADS"] ="shark/uploads" 
 db.init_app(app)

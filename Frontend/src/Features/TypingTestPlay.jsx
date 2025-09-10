@@ -100,7 +100,8 @@ const TypingTestPlay = () =>{
                 const userData = JSON.parse(user)
                 const userId = userData.user_id
                 console.log(wpm,accuracy)
-                const url=  `http://127.0.0.1:5000/history`
+                const API_URL = process.env.REACT_APP_API_URL;
+                const url=  `${API_URL}/history`
                 const options ={
                     method: "POST",
                     headers: {
