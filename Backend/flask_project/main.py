@@ -721,7 +721,7 @@ def tokens():
 @app.route("/updates",methods=["PATCH"])
 @jwt_required()
 def change_name(retrieve_id):
-    retrieve_id = get_jwt_identity()
+    retrieve_id = int(get_jwt_identity())
     verify = User.query.get(retrieve_id)
     if not verify:
         return jsonify({"message":"Invalid or expired token"})
@@ -760,7 +760,6 @@ def change_name(retrieve_id):
 def get_history():
     histories = History.query.all()
     return jsonify({"history": [history.to_diction() for history in histories]})
- 
 if __name__=="__main__":
     with app.app_context():
         db.create_all()
