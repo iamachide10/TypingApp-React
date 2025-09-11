@@ -8,8 +8,7 @@ import uuid,secrets,random
 from flask_jwt_extended import JWTManager,create_access_token,create_refresh_token,set_access_cookies,set_refresh_cookies,jwt_required,get_jwt_identity,unset_jwt_cookies,decode_token
 from datetime import timedelta ,UTC,timezone
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail,Email,To,Content, TrackingSettings, ClickTracking
-
+from sendgrid.helpers.mail import Mail,Email,To,Content, TrackingSettings, ClickTracking,From
 from PIL import Image
 import secrets
 from datetime import datetime
