@@ -7,6 +7,8 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  
+
   const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -25,19 +27,19 @@ function Login() {
   };
 
   try {
-    const response = await fetch(url, options);
+       const response = await fetch(url, options);
     const data = await response.json();
 
-    const message = data.message;
-    alert(message);
+    // Always display the backend message
+    alert(data.message || "Something went wrong");
 
-    if (response.ok) {
-      const userData = data.credentials;
+    if (response.ok && data.success) {
+      // Save user data if login was successful
+      const userData = data.data; // ✅ backend sends this as "data"
       localStorage.setItem("user", JSON.stringify(userData));
-   
 
 
-
+      
       const API_URL = process.env.REACT_APP_API_URL;
       const generalSettingsRes = await fetch(`${API_URL}/general-settings`);
       const generalSettingsData = await generalSettingsRes.json();

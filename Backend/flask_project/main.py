@@ -291,7 +291,6 @@ def display_users():
         return jsonify({"message":"Couldn't get users"})
     every_user = [user.to_dic() for user in get_users]
     return jsonify({"Users":every_user})
-
 @app.route("/login", methods=["POST"])
 def log_user():
     data = request.get_json()
@@ -299,62 +298,82 @@ def log_user():
     user_password = data.get("password")
 
     if not user_email or not user_password:
-        return jsonify({"message": "Email and password required"}), 400
+        return jsonify({
+            "success": False,
+            "message": "Email and password required"
+        }), 400
 
     user_login = User.query.filter_by(email=user_email).first()
-    print(user_login)
-
     if not user_login:
-        return jsonify({"message": "User not found"}), 401
+        return jsonify({
+            "success": False,
+            "message": "User not found"
+        }), 401
 
-    if user_login.check_password(user_password):
-        if user_login.is_verified:
+    if not user_login.check_password(user_password):
+        return jsonify({
+            "success": False,
+            "message": "Invalid email or password"
+        }), 401
+
+    # ✅ User exists & password is correct
+    if user_login.is_verified:
+        try:
             access_token = create_access_token(identity=user_login.id)
             refresh_token = create_refresh_token(identity=user_login.id)
 
             response = jsonify({
-                "message": "User login successfully",
-                "credentials": user_login.to_dic()
+                "success": True,
+                "message": "User login successful",
+                "data": user_login.to_dic()
             })
             set_access_cookies(response, access_token)
             set_refresh_cookies(response, refresh_token)
-            return response
+            return response, 200
+        except Exception as e:
+            app.logger.error(f"Login error: {e}")
+            return jsonify({
+                "success": False,
+                "message": "Something went wrong during login"
+            }), 500
 
+    # ✅ User not verified → send verification email
+    try:
+        token = secrets.token_urlsafe(32)
+        expiration_time = datetime.utcnow() + timedelta(minutes=15)
+
+        reset_token = ResetToken(
+            user_id=user_login.id,
+            expires_at=expiration_time
+        )
+        reset_token.set_password(token)
+        db.session.add(reset_token)
+        db.session.commit()
+
+        subject = "Verify your email"
+        link = f"https://typingapp-mastery.onrender.com/verify-email/{token}"
+        body = f"Please click this link to verify your email:\n{link}"
+
+        status = send_emails(user_login.email, subject, body)
+
+        if status == 202:
+            return jsonify({
+                "success": False,
+                "message": "A verification link has been sent to your inbox"
+            }), 200
         else:
-            try:
-                # Generate verification token
-                token = secrets.token_urlsafe(32)
-                expiration_time = datetime.utcnow() + timedelta(minutes=15)
-                
-                # Save reset/verification token
-                reset_token = ResetToken(
-                    user_id=user_login.id,
-   # store plain or hash if you want
-                    expires_at=expiration_time
-                )
-                reset_token.set_password(token)
-                db.session.add(reset_token)
-                db.session.commit()
+            return jsonify({
+                "success": False,
+                "message": "Something went wrong, couldn't send the email"
+            }), 500
 
-                # Send verification email
-                subject = "Verify your email"
-                link =f"https://typingapp-mastery.onrender.com/verify-email/{token}"
-
-                body = f"Please click this link to resend verification email.\n\t{link}"
-                status = send_emails(user_login.email, subject, body)
-
-                if status == 202:
-                    return jsonify({"message": "A resend verification link has been sent to your inbox"}), 200
-                else:
-                    return jsonify({"message": "Something went wrong, couldn't send the email"}), 500
-
-            except Exception as e:
-                db.session.rollback()
-                app.logger.error(f"Error: {e}")
-                return jsonify({"message": "Something went wrong"}), 500
-
-    else:
-        return jsonify({"message": "Invalid email or password"}), 401
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error sending verification email: {e}")
+        return jsonify({
+            "success": False,
+            "message": "Something went wrong"
+        }), 500
 
 
 
