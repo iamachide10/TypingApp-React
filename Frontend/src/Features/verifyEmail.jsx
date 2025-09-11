@@ -13,6 +13,7 @@ export default function VerifyEmail() {
         const response= await fetch(`${API_URL}/verify-email?token=${token}`);
         const data = await response.json();
         setMessage(data.Message || data.message);
+         window.location.href = "/login";
       } catch (error) {
         setMessage("Something went wrong while verifying your email.");
       } finally {

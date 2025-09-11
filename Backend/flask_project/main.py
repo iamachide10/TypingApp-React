@@ -154,6 +154,8 @@ def general_settings():
     return jsonify({"message":"General settings updated successfully", "settings":general.to_dic()}),200
 
 
+
+
 @app.route("/general-settings", methods=["GET"])
 @jwt_required()
 def get_general_settings():
