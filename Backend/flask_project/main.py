@@ -9,6 +9,7 @@ from flask_jwt_extended import JWTManager,create_access_token,create_refresh_tok
 from datetime import timedelta ,UTC,timezone
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail,Email,To,Content, TrackingSettings, ClickTracking
+
 from PIL import Image
 import secrets
 from datetime import datetime
@@ -63,27 +64,30 @@ def save_profile_picture(file,upload_folder,preferred_format='JPEG'):
 
 def send_emails(recipient, subject, body):
     sg = SendGridAPIClient(api_key=app.config["SENDGRID_API_KEY"])
-    from_email = Email(app.config["FROM_EMAIL"], app.config["FROM_NAME"])
+
+    # Use From instead of Email
+    from_email = From(app.config["FROM_EMAIL"], app.config["FROM_NAME"])
+
     print(f"DEBUG subject: {subject} ({type(subject)})")
 
-    
     mail = Mail(
         from_email=from_email,
-        to_emails=recipient,
-        subject=subject
+        to_emails=To(recipient),
+        subject=str(subject)  # force string just in case
     )
-    mail.add_content(Content("text/plain", body))  
+    mail.add_content(Content("text/plain", body))
 
-    
     tracking_settings = TrackingSettings()
     tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
     mail.tracking_settings = tracking_settings
+
     try:
         response = sg.send(mail)
         return response.status_code
     except Exception as e:
         print(f"Error sending email: {e}")
         return None
+
 
 
 @app.route("/refresh-token",methods = ["POST"])
