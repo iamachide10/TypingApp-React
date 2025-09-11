@@ -20,6 +20,7 @@ function Login() {
    const url=  `${API_URL}/login`
   const options = {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -39,7 +40,7 @@ function Login() {
       localStorage.setItem("user", JSON.stringify(userData));
 
 
-      
+
       const API_URL = process.env.REACT_APP_API_URL;
       const generalSettingsRes = await fetch(`${API_URL}/general-settings`);
       const generalSettingsData = await generalSettingsRes.json();
