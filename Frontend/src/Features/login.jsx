@@ -25,6 +25,7 @@ function Login() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(credentials),
+    credentials: "include", // Include cookies in the request
   };
 
   try {
