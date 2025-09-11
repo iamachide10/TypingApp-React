@@ -24,3 +24,5 @@ class Config:
     JWT_COOKIE_HTTPONLY = True
     JWT_ACCESS_COOKIE_PATH = "/"
     JWT_REFRESH_COOKIE_PATH = "/refresh-tokens"
+    JWT_COOKIE_SAMESITE = "None"
+
