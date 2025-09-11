@@ -737,10 +737,11 @@ def change_name():
         updated_fields.append(verify.user_name)
         messages.append(response)
     if profile:
-        old_filename = verify.profile_image
-        file_path = os.path.join(app.config["UPLOAD_FOLDER"],old_filename)
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        if verify.profile_image:
+            old_filename = verify.profile_image
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"],old_filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
         status = save_profile_picture(profile,app.config["UPLOAD_FOLDER"])
         if status is None:
             return jsonify({"message":"Please upload a real image"})
