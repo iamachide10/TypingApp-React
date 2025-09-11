@@ -129,8 +129,8 @@ def refresh_access_token():
 
 @app.route("/general-settings",methods=["POST"])
 @jwt_required() 
-def general_settings(user_id):
-    user_id = get_jwt_identity()
+def general_settings():
+    user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message":"User not found"})
@@ -157,7 +157,7 @@ def general_settings(user_id):
 @app.route("/general-settings", methods=["GET"])
 @jwt_required()
 def get_general_settings():
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message": "User not found"}), 404
@@ -182,8 +182,8 @@ def get_general_settings():
 
 @app.route("/custom-passage-settings",methods=["POST"])
 @jwt_required()
-def passage_settings(user_id):
-    user_id = get_jwt_identity()
+def passage_settings():
+    user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
     if not user:
         return jsonify({"Message":"User not found"}),404
@@ -205,8 +205,8 @@ def passage_settings(user_id):
 
 @app.route("/theme-setting", methods=["POST"])
 @jwt_required()
-def theme_settings(user_id):
-    verify = get_jwt_identity()
+def theme_settings():
+    verify = int(get_jwt_identity())
     person = User.query.get(user_id)
     if not person:
         return jsonify({"message": "User not found"}), 404
@@ -568,8 +568,8 @@ def new_password():
 
 @app.route("/history",methods=["POST"])
 @jwt_required()
-def history(retrieve_id):
-    retrieve_id = get_jwt_identity()
+def history():
+    retrieve_id = int(get_jwt_identity())
     if not retrieve_id:
         return jsonify({"message":"Invalid or corrupted token"})
     check = User.query.filter_by(id=retrieve_id).first()
@@ -612,7 +612,7 @@ def leaderboard():
 @app.route("/progress-tracking",methods=["GET"])
 @jwt_required()
 def progress():
-    get_id = get_jwt_identity()
+    get_id = int(get_jwt_identity())
     if not get_id:
         return jsonify({"message":"Invalid or expired token"})
     verify = User.query.filter_by(id=get_id).first()
@@ -643,7 +643,7 @@ def progress():
 @app.route("/custom-texts",methods=["POST"])
 @jwt_required()
 def custom():
-    get_id = get_jwt_identity()
+    get_id = int(get_jwt_identity())
     if not get_id:
         return jsonify({"message":"Invalid or expired token"})
     verify = User.query.filter_by(id=get_id).first()
@@ -668,7 +668,7 @@ def custom():
 @app.route("/custom-texts",methods=["GET"])
 @jwt_required()
 def fetch_custom():
-    get_id = get_jwt_identity()
+    get_id = int(get_jwt_identity())
     if not get_id:
         return jsonify({"message":"Invalid or expired token"})
     verify = User.query.filter_by(id=get_id).first()
@@ -720,7 +720,7 @@ def tokens():
 
 @app.route("/updates",methods=["PATCH"])
 @jwt_required()
-def change_name(retrieve_id):
+def change_name():
     retrieve_id = int(get_jwt_identity())
     verify = User.query.get(retrieve_id)
     if not verify:
