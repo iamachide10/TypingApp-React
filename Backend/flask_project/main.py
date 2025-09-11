@@ -332,8 +332,9 @@ def log_user():
 
     if user_login.is_verified:
         try:
-            access_token = create_access_token(identity=user_login.id)
-            refresh_token = create_refresh_token(identity=user_login.id)
+            access_token = create_access_token(identity=str(user_login.id))
+            refresh_token = create_refresh_token(identity=str(user_login.id))
+
 
             response = jsonify({
                 "success": True,
@@ -393,7 +394,7 @@ def log_user():
 @app.route("/logout",methods = ["POST"])
 @jwt_required()
 def log_out():
-    check = get_jwt_identity()
+    check = int(get_jwt_identity())
     verify = User.query.filter_by(id=check).first()
     if not verify:
         return jsonify({"Message":"Couldn't find user"}),404
