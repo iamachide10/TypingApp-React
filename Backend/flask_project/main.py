@@ -327,6 +327,9 @@ def log_user():
         }), 401
 
     # ✅ User exists & password is correct
+    print("DEBUG:", user_login.email, "verified:", user_login.is_verified)
+    print("Password check:", user_login.check_password(user_password))
+
     if user_login.is_verified:
         try:
             access_token = create_access_token(identity=user_login.id)
