@@ -59,22 +59,26 @@ def save_profile_picture(file,upload_folder,preferred_format='JPEG'):
         print(f'error saving profile_pic:{e}')
         return None
 
-
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, From, To, Content, TrackingSettings, ClickTracking
 
 def send_emails(recipient, subject, body):
     sg = SendGridAPIClient(api_key=app.config["SENDGRID_API_KEY"])
 
-    # Use From instead of Email
+    # Make sure subject is always a string
+    if not isinstance(subject, str):
+        subject = str(subject)
+
     from_email = From(app.config["FROM_EMAIL"], app.config["FROM_NAME"])
 
-    print(f"DEBUG subject: {subject} ({type(subject)})")
+    print(f"✅ DEBUG subject: {subject} ({type(subject)})")
 
     mail = Mail(
         from_email=from_email,
         to_emails=To(recipient),
-        subject=str(subject)  # force string just in case
+        subject=subject
     )
-    mail.add_content(Content("text/plain", body))
+    mail.add_content(Content("text/plain", str(body)))  # force body to string
 
     tracking_settings = TrackingSettings()
     tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
@@ -82,9 +86,10 @@ def send_emails(recipient, subject, body):
 
     try:
         response = sg.send(mail)
+        print(f"📨 Email sent, status code: {response.status_code}")
         return response.status_code
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"❌ Error sending email: {e}")
         return None
 
 
@@ -294,6 +299,8 @@ def display_users():
         return jsonify({"message":"Couldn't get users"})
     every_user = [user.to_dic() for user in get_users]
     return jsonify({"Users":every_user})
+
+
 @app.route("/login", methods=["POST"])
 def log_user():
     data = request.get_json()
