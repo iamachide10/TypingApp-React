@@ -334,7 +334,7 @@ def log_user():
             app.logger.error(f"Login error: {e}")
             return jsonify({
                 "success": False,
-                "message": "Something went wrong during login"
+            "message": f"Something went wrong during login  {e}"
             }), 500
 
     # ✅ User not verified → send verification email
