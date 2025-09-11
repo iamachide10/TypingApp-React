@@ -44,7 +44,9 @@ const AccountSettings =()=>{
     
     try {
       const response = await fetch(url, {
+
         method: "PATCH",
+        credentials: "include",
         body: formData,
       });
 

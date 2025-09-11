@@ -20,7 +20,7 @@ function Login() {
    const url=  `${API_URL}/login`
   const options = {
     method: "POST",
-    credentials: "include",
+  
     headers: {
       "Content-Type": "application/json",
     },
